@@ -16,7 +16,7 @@ type Simulation struct {
 // }
 
 func (s *Simulation) Finished() bool {
-	return s.finished
+	return true //s.finished
 }
 
 func (s *Simulation) Step() {
