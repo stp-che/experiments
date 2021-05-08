@@ -1,11 +1,15 @@
 package sim
 
-import "log"
+import (
+	"log"
+	"math/rand"
+	"time"
+)
 
 type RegionContent int
 
 const (
-	RCNone RegionContent = iota + 1
+	RCNone RegionContent = iota
 	RCWall
 	RCFood
 	RCBot
@@ -91,6 +95,12 @@ func (w *World) Init() {
 	for i := 0; i < n; i++ {
 		w.Regions[i] = &Region{}
 	}
+}
+
+func (w *World) RandomPos() Pos {
+	rand.Seed(time.Now().UnixNano())
+	n := rand.Intn(w.Cols*w.Rows) - 1
+	return Pos{n % w.Cols, n / w.Cols}
 }
 
 func newWorld(cols, rows int) *World {

@@ -20,8 +20,6 @@ func (s *Scene) Draw(win *pixelgl.Window) {
 	}
 	s.imd.Clear()
 	s.imd.Reset()
-	s.WorldMap.Clear()
-	s.WorldMap.FillCell(s.Sim.Bot.Pos, botColor)
 	s.WorldMap.Render(s.imd)
 	s.imd.Draw(win)
 }

@@ -11,5 +11,7 @@ var (
 
 	worlMapRegionBorderColor = pixel.RGB(0.6, 0.6, 0.6)
 
-	botColor = colornames.Darkcyan
+	wallColor = colornames.Brown
+	botColor  = colornames.Darkcyan
+	foodColor = colornames.Green
 )

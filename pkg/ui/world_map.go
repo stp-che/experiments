@@ -2,62 +2,43 @@ package ui
 
 import (
 	"experiments/pkg/sim"
-	"image/color"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 )
 
-type filledCell struct {
-	Cell  sim.Pos
-	Color color.RGBA
-}
-
 type WorldMap struct {
-	Board         *sim.World
-	cellSize      int
-	cellSizeFloat float64
-	bounds        pixel.Rect
-	filledCells   []filledCell
+	Board           *sim.World
+	regionSize      int
+	regionSizeFloat float64
+	bounds          pixel.Rect
 }
 
 func (b *WorldMap) FitInto(bounds pixel.Rect) {
-	b.cellSize = int(bounds.W()) / b.Board.Cols
-	if b.cellSize*b.Board.Rows > int(bounds.H()) {
-		b.cellSize = int(bounds.H()) / b.Board.Rows
+	b.regionSize = int(bounds.W()) / b.Board.Cols
+	if b.regionSize*b.Board.Rows > int(bounds.H()) {
+		b.regionSize = int(bounds.H()) / b.Board.Rows
 	}
-	b.bounds = bounds.Resized(topLeft(bounds), pixel.V(float64(b.cellSize*b.Board.Cols), float64(b.cellSize*b.Board.Rows)))
-	b.cellSizeFloat = float64(b.cellSize)
+	b.bounds = bounds.Resized(topLeft(bounds), pixel.V(float64(b.regionSize*b.Board.Cols), float64(b.regionSize*b.Board.Rows)))
+	b.regionSizeFloat = float64(b.regionSize)
 	// fmt.Printf("%v\n", bounds)
 	// fmt.Printf("%v\n", b.bounds)
 }
 
 func (b *WorldMap) CellSize() float64 {
-	return b.cellSizeFloat
+	return b.regionSizeFloat
 }
 
 func (b *WorldMap) Bounds() pixel.Rect {
 	return b.bounds
 }
 
-func (b *WorldMap) FillCell(cell sim.Pos, clr color.RGBA) {
-	if b.filledCells == nil {
-		b.filledCells = make([]filledCell, 10)
-	}
-	b.filledCells = append(b.filledCells, filledCell{
-		Cell:  cell,
-		Color: clr,
-	})
-}
-
-func (b *WorldMap) Clear() {
-	b.filledCells = b.filledCells[:0]
-}
-
 func (b *WorldMap) Render(imd *imdraw.IMDraw) {
 	b.renderTable(imd)
-	for _, cell := range b.filledCells {
-		b.renderFilledCell(cell, imd)
+	for x := 0; x < b.Board.Cols; x++ {
+		for y := 0; y < b.Board.Rows; y++ {
+			b.renderRegion(sim.Pos{x, y}, imd)
+		}
 	}
 }
 
@@ -67,27 +48,38 @@ func (b *WorldMap) renderTable(imd *imdraw.IMDraw) {
 	imd.Push(b.bounds.Max)
 	imd.Rectangle(1)
 	for i := 1; i < b.Board.Cols; i++ {
-		x := b.bounds.Min.X + float64(b.cellSize*i)
+		x := b.bounds.Min.X + float64(b.regionSize*i)
 		imd.Push(pixel.V(x, b.bounds.Min.Y))
 		imd.Push(pixel.V(x, b.bounds.Max.Y))
 		imd.Line(1)
 	}
 	for i := 1; i < b.Board.Rows; i++ {
-		y := b.bounds.Max.Y - float64(b.cellSize*i)
+		y := b.bounds.Max.Y - float64(b.regionSize*i)
 		imd.Push(pixel.V(b.bounds.Min.X, y))
 		imd.Push(pixel.V(b.bounds.Max.X, y))
 		imd.Line(1)
 	}
 }
 
-func (b *WorldMap) renderFilledCell(cell filledCell, imd *imdraw.IMDraw) {
-	imd.Color = cell.Color
+func (b *WorldMap) renderRegion(pos sim.Pos, imd *imdraw.IMDraw) {
+	reg := b.Board.Region(pos)
+	if reg.Content == sim.RCNone {
+		return
+	}
+	switch reg.Content {
+	case sim.RCWall:
+		imd.Color = wallColor
+	case sim.RCBot:
+		imd.Color = botColor
+	case sim.RCFood:
+		imd.Color = foodColor
+	}
 	topLeft := pixel.V(
-		b.bounds.Min.X+float64(b.cellSize*cell.Cell[0]),
-		b.bounds.Max.Y-float64(b.cellSize*cell.Cell[1])-1,
+		b.bounds.Min.X+float64(b.regionSize*pos[0]),
+		b.bounds.Max.Y-float64(b.regionSize*pos[1])-1,
 	)
 	imd.Push(topLeft)
-	imd.Push(topLeft.Add(pixel.V(b.cellSizeFloat-1, -b.cellSizeFloat+1)))
+	imd.Push(topLeft.Add(pixel.V(b.regionSizeFloat-1, -b.regionSizeFloat+1)))
 	imd.Rectangle(0)
 }
 

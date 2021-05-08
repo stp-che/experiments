@@ -10,9 +10,14 @@ type Bot struct {
 	Pos   Pos
 }
 
-func (b *Bot) Attach(world *World, pos Pos) {
+func (b *Bot) Settle(world *World, pos Pos) {
+	reg := world.Region(pos)
+	if reg == nil {
+		return
+	}
 	b.world = world
 	b.Pos = pos
+	reg.Occupy(b)
 }
 
 func (b *Bot) Move() bool {
