@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type RegionContent int
+type RegionContent byte
 
 const (
 	RCNone RegionContent = iota
@@ -15,7 +15,7 @@ const (
 	RCBot
 )
 
-type Direction int
+type Direction byte
 
 const (
 	UpLeft Direction = iota + 1
@@ -160,6 +160,33 @@ func randomWalk(w *World, keepingDirection int, step func(*Region) bool) {
 func (w *World) RandomPos() Pos {
 	rand.Seed(time.Now().UnixNano())
 	n := rand.Intn(w.Cols * w.Rows)
+	return Pos{n % w.Cols, n / w.Cols}
+}
+
+func (w *World) RandomEmptyPositions(n int) []Pos {
+	wSize := w.Cols * w.Rows
+	freeRegIdxs := make([]int, 0, wSize)
+	for i, r := range w.Regions {
+		if r.Content == RCNone {
+			freeRegIdxs = append(freeRegIdxs, i)
+		}
+	}
+	if n < len(freeRegIdxs) {
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(freeRegIdxs), func(i, j int) {
+			freeRegIdxs[i], freeRegIdxs[j] = freeRegIdxs[j], freeRegIdxs[i]
+		})
+	} else {
+		n = len(freeRegIdxs)
+	}
+	res := make([]Pos, n)
+	for i := 0; i < n; i++ {
+		res[i] = w.posFromInt(freeRegIdxs[i])
+	}
+	return res
+}
+
+func (w *World) posFromInt(n int) Pos {
 	return Pos{n % w.Cols, n / w.Cols}
 }
 

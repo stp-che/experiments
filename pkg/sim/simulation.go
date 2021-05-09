@@ -29,9 +29,14 @@ func (s *Simulation) Step() {
 
 func NewSimulation(cfg Config) *Simulation {
 	world := newWorld(cfg.WorldWidth, cfg.WorldHeight)
-	bots := createBots(10)
-	for _, b := range bots {
-		b.Settle(world, world.RandomPos())
+	botsNumber := 10
+	ps := world.RandomEmptyPositions(botsNumber)
+	if botsNumber > len(ps) {
+		botsNumber = len(ps)
+	}
+	bots := createBots(botsNumber)
+	for i := 0; i < botsNumber; i++ {
+		bots[i].Settle(world, ps[i])
 	}
 	return &Simulation{
 		World: world,
