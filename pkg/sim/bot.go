@@ -1,38 +1,54 @@
 package sim
 
-import (
-	"math/rand"
-	"time"
-)
+type iBotController interface {
+	NextAction(*World, int) *Action
+}
+
+type randomBotCtrl struct{}
+
+func (c *randomBotCtrl) NextAction(world *World, pos int) *Action {
+	return &Action{
+		Type:      AMove,
+		Direction: randomDirection(),
+	}
+}
 
 type Bot struct {
-	world *World
-	Pos   Pos
+	world      *World
+	Ctrl       iBotController
+	Pos        int
+	nextAction *Action
 }
 
-func (b *Bot) Settle(world *World, pos Pos) {
-	reg := world.Region(pos)
-	if reg == nil {
-		return
-	}
+func (b *Bot) Init(world *World, ctrl iBotController) *Bot {
 	b.world = world
-	b.Pos = pos
-	reg.Occupy(b)
-}
-
-func (b *Bot) Move() bool {
-	newPos := b.Pos.Next(randomDirection())
-	newReg := b.world.Region(newPos)
-	if newReg == nil {
-		return false
+	b.Ctrl = ctrl
+	if b.Ctrl == nil {
+		b.Ctrl = &randomBotCtrl{}
 	}
-	b.world.Region(b.Pos).Clear()
-	b.Pos = newPos
-	newReg.Occupy(b)
-	return true
+	return b
 }
 
-func randomDirection() Direction {
-	rand.Seed(time.Now().UnixNano())
-	return Direction(rand.Intn(7) + 1)
+func (b *Bot) NextAction() *Action {
+	if b.nextAction == nil {
+		b.nextAction = b.Ctrl.NextAction(b.world, b.Pos).Bind(b.world, b)
+	}
+	return b.nextAction
 }
+
+func (b *Bot) DoNextAction(ctx map[int]int) {
+	b.NextAction().Apply(ctx)
+	b.nextAction = nil
+}
+
+// func (b *Bot) Move() bool {
+// 	newPos := b.world.NextPos(b.Pos, randomDirection())
+// 	newReg := b.world.Regions[newPos]
+// 	if newReg == nil {
+// 		return false
+// 	}
+// 	b.world.Regions[b.Pos].Clear()
+// 	b.Pos = newPos
+// 	newReg.Occupy(b)
+// 	return true
+// }

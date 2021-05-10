@@ -35,10 +35,8 @@ func (b *WorldMap) Bounds() pixel.Rect {
 
 func (b *WorldMap) Render(imd *imdraw.IMDraw) {
 	b.renderTable(imd)
-	for x := 0; x < b.Board.Cols; x++ {
-		for y := 0; y < b.Board.Rows; y++ {
-			b.renderRegion(sim.Pos{x, y}, imd)
-		}
+	for i, r := range b.Board.Regions {
+		b.renderRegion(i, r, imd)
 	}
 }
 
@@ -61,8 +59,7 @@ func (b *WorldMap) renderTable(imd *imdraw.IMDraw) {
 	}
 }
 
-func (b *WorldMap) renderRegion(pos sim.Pos, imd *imdraw.IMDraw) {
-	reg := b.Board.Region(pos)
+func (b *WorldMap) renderRegion(pos int, reg *sim.Region, imd *imdraw.IMDraw) {
 	if reg.Content == sim.RCNone {
 		return
 	}
@@ -74,9 +71,10 @@ func (b *WorldMap) renderRegion(pos sim.Pos, imd *imdraw.IMDraw) {
 	case sim.RCFood:
 		imd.Color = foodColor
 	}
+	x, y := b.Board.XYPos(pos)
 	topLeft := pixel.V(
-		b.bounds.Min.X+float64(b.regionSize*pos[0]),
-		b.bounds.Max.Y-float64(b.regionSize*pos[1])-1,
+		b.bounds.Min.X+float64(b.regionSize*x),
+		b.bounds.Max.Y-float64(b.regionSize*y)-1,
 	)
 	imd.Push(topLeft)
 	imd.Push(topLeft.Add(pixel.V(b.regionSizeFloat-1, -b.regionSizeFloat+1)))

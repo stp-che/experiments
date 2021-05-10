@@ -16,13 +16,13 @@ type Simulation struct {
 // }
 
 func (s *Simulation) Finished() bool {
-	return true //s.finished
+	return s.finished
 }
 
 func (s *Simulation) Step() {
 	if !s.finished {
 		for _, b := range s.Bots {
-			b.Move()
+			b.DoNextAction(map[int]int{})
 		}
 	}
 }
@@ -34,9 +34,13 @@ func NewSimulation(cfg Config) *Simulation {
 	if botsNumber > len(ps) {
 		botsNumber = len(ps)
 	}
-	bots := createBots(botsNumber)
+	bots := createBots(botsNumber, world)
 	for i := 0; i < botsNumber; i++ {
-		bots[i].Settle(world, ps[i])
+		(&putBot{
+			Bot: bots[i],
+			Reg: world.Regions[ps[i]],
+			Pos: ps[i],
+		}).Apply()
 	}
 	return &Simulation{
 		World: world,
@@ -44,10 +48,10 @@ func NewSimulation(cfg Config) *Simulation {
 	}
 }
 
-func createBots(n int) []*Bot {
+func createBots(n int, w *World) []*Bot {
 	bots := make([]*Bot, n)
 	for i := 0; i < n; i++ {
-		bots[i] = &Bot{}
+		bots[i] = (&Bot{}).Init(w, nil)
 	}
 	return bots
 }

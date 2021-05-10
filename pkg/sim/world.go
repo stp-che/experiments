@@ -1,7 +1,6 @@
 package sim
 
 import (
-	"log"
 	"math/rand"
 	"time"
 )
@@ -15,62 +14,13 @@ const (
 	RCBot
 )
 
-type Direction byte
-
-const (
-	UpLeft Direction = iota + 1
-	Up
-	UpRight
-	Right
-	DownRight
-	Down
-	DownLeft
-	Left
-)
-
-type Pos [2]int
-
-func (p Pos) Next(d Direction) Pos {
-	switch d {
-	case UpLeft:
-		return Pos{p[0] - 1, p[1] - 1}
-	case Up:
-		return Pos{p[0], p[1] - 1}
-	case UpRight:
-		return Pos{p[0] + 1, p[1] - 1}
-	case Right:
-		return Pos{p[0] + 1, p[1]}
-	case DownRight:
-		return Pos{p[0] + 1, p[1] + 1}
-	case Down:
-		return Pos{p[0], p[1] + 1}
-	case DownLeft:
-		return Pos{p[0] - 1, p[1] + 1}
-	case Left:
-		return Pos{p[0] - 1, p[1]}
-	default:
-		log.Fatalln("wrong direction")
-		return p
-	}
-}
-
 type Region struct {
 	Content RegionContent
 	Bot     *Bot
 }
 
-func (r *Region) Clear() {
-	r.Content = RCNone
-	r.Bot = nil
-}
-
 func (r *Region) Busy() bool {
 	return r.Content == RCWall || r.Content == RCBot
-}
-
-func (r *Region) Occupy(bot *Bot) {
-	r.Content = RCBot
-	r.Bot = bot
 }
 
 type World struct {
@@ -81,19 +31,8 @@ type World struct {
 	Boundless bool
 }
 
-func (w *World) Region(p Pos) *Region {
-	if !w.IncludesPos(p) {
-		return nil
-	}
-	return w.Regions[p[1]*w.Cols+p[0]]
-}
-
-func (w *World) IncludesPos(p Pos) bool {
-	return p[0] >= 0 && p[0] < w.Cols && p[1] >= 0 && p[1] < w.Rows
-}
-
-func (w *World) PossibleDirection(p Pos, d Direction) bool {
-	return w.IncludesPos(p.Next(d))
+func (w *World) PossibleDirection(p int, d Direction) bool {
+	return w.NextPos(p, d) >= 0
 }
 
 func (w *World) Init() {
@@ -138,7 +77,7 @@ func randomWalk(w *World, keepingDirection int, step func(*Region) bool) {
 	dirs := [4]Direction{Up, Right, Down, Left}
 	currentDir := Up
 	dirsChoice := make([]Direction, 0, 4)
-	for step(w.Region(currentPos)) {
+	for step(w.Regions[currentPos]) {
 		// fmt.Println("---------------")
 		// fmt.Printf("w.PossibleDirection(%v, %v): %v\n", currentPos, currentDir, w.PossibleDirection(currentPos, currentDir))
 		if !w.PossibleDirection(currentPos, currentDir) || rand.Intn(100) > keepingDirection {
@@ -153,17 +92,32 @@ func randomWalk(w *World, keepingDirection int, step func(*Region) bool) {
 			currentDir = dirsChoice[rand.Intn(len(dirsChoice))]
 			// fmt.Printf("    new direction: %v\n", currentDir)
 		}
-		currentPos = currentPos.Next(currentDir)
+		currentPos = w.NextPos(currentPos, currentDir)
 	}
 }
 
-func (w *World) RandomPos() Pos {
+func (w *World) RandomPos() int {
 	rand.Seed(time.Now().UnixNano())
-	n := rand.Intn(w.Cols * w.Rows)
-	return Pos{n % w.Cols, n / w.Cols}
+	return rand.Intn(w.Cols * w.Rows)
 }
 
-func (w *World) RandomEmptyPositions(n int) []Pos {
+// Returns position of region next to the given one in given direction
+// Returns -1 if it is out of world bounds
+func (w *World) NextPos(pos int, d Direction) (res int) {
+	dx, dy := d.DeltaXY()
+	x, y := w.XYPos(pos)
+	if x+dx < 0 || x+dx >= w.Cols || y+dy < 0 || y+dy >= w.Rows {
+		return -1
+	}
+	return pos + dy*w.Cols + dx
+}
+
+func (w *World) XYPos(n int) (int, int) {
+	// TODO: check bounds
+	return n % w.Cols, n / w.Cols
+}
+
+func (w *World) RandomEmptyPositions(n int) []int {
 	wSize := w.Cols * w.Rows
 	freeRegIdxs := make([]int, 0, wSize)
 	for i, r := range w.Regions {
@@ -171,23 +125,14 @@ func (w *World) RandomEmptyPositions(n int) []Pos {
 			freeRegIdxs = append(freeRegIdxs, i)
 		}
 	}
-	if n < len(freeRegIdxs) {
-		rand.Seed(time.Now().UnixNano())
-		rand.Shuffle(len(freeRegIdxs), func(i, j int) {
-			freeRegIdxs[i], freeRegIdxs[j] = freeRegIdxs[j], freeRegIdxs[i]
-		})
-	} else {
-		n = len(freeRegIdxs)
+	if n >= len(freeRegIdxs) {
+		return freeRegIdxs
 	}
-	res := make([]Pos, n)
-	for i := 0; i < n; i++ {
-		res[i] = w.posFromInt(freeRegIdxs[i])
-	}
-	return res
-}
-
-func (w *World) posFromInt(n int) Pos {
-	return Pos{n % w.Cols, n / w.Cols}
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(freeRegIdxs), func(i, j int) {
+		freeRegIdxs[i], freeRegIdxs[j] = freeRegIdxs[j], freeRegIdxs[i]
+	})
+	return freeRegIdxs[:n]
 }
 
 func newWorld(cols, rows int) *World {
