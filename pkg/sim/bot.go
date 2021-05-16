@@ -36,19 +36,6 @@ func (b *Bot) NextAction() *Action {
 	return b.nextAction
 }
 
-func (b *Bot) DoNextAction(ctx map[int]int) {
-	b.NextAction().Apply(ctx)
+func (b *Bot) StepDone() {
 	b.nextAction = nil
 }
-
-// func (b *Bot) Move() bool {
-// 	newPos := b.world.NextPos(b.Pos, randomDirection())
-// 	newReg := b.world.Regions[newPos]
-// 	if newReg == nil {
-// 		return false
-// 	}
-// 	b.world.Regions[b.Pos].Clear()
-// 	b.Pos = newPos
-// 	newReg.Occupy(b)
-// 	return true
-// }

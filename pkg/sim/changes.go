@@ -2,7 +2,6 @@ package sim
 
 type change interface {
 	Apply()
-	ConflictsWith(change) bool
 }
 
 type clearReg struct {

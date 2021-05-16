@@ -19,14 +19,6 @@ func (s *Simulation) Finished() bool {
 	return s.finished
 }
 
-func (s *Simulation) Step() {
-	if !s.finished {
-		for _, b := range s.Bots {
-			b.DoNextAction(map[int]int{})
-		}
-	}
-}
-
 func NewSimulation(cfg Config) *Simulation {
 	world := newWorld(cfg.WorldWidth, cfg.WorldHeight)
 	botsNumber := 10
@@ -54,6 +46,58 @@ func createBots(n int, w *World) []*Bot {
 		bots[i] = (&Bot{}).Init(w, nil)
 	}
 	return bots
+}
+
+func (s *Simulation) Step() {
+	if !s.finished {
+		actionsByType, contexts := s.nextActionsAndContexts()
+		for _, aType := range actionTypesByPriority {
+			actions, ok := actionsByType[aType]
+			if !ok {
+				continue
+			}
+			changes := make([]change, 0, 4)
+			for _, a := range actions {
+				actionChanges := a.Effect(contexts[aType])
+				if actionChanges == nil {
+					continue
+				}
+				changes = append(changes, actionChanges...)
+			}
+			for _, c := range changes {
+				c.Apply()
+			}
+		}
+
+		for _, bot := range s.Bots {
+			bot.StepDone()
+		}
+	}
+}
+
+func (s *Simulation) nextActionsAndContexts() (map[ActionType][]*Action, map[ActionType]map[int]int) {
+	actionsByType := map[ActionType][]*Action{}
+	contexts := map[ActionType]map[int]int{}
+	for _, bot := range s.Bots {
+		a := bot.NextAction()
+		if actions, ok := actionsByType[a.Type]; ok {
+			actionsByType[a.Type] = append(actions, a)
+		} else {
+			actionsByType[a.Type] = make([]*Action, 1, 4)
+			actionsByType[a.Type][0] = a
+		}
+		if ctx, ok := contexts[a.Type]; !ok {
+			contexts[a.Type] = map[int]int{a.TargetPos(): 1}
+		} else {
+			if _, ok = ctx[a.TargetPos()]; ok {
+				ctx[a.TargetPos()] += 1
+			} else {
+				ctx[a.TargetPos()] = 1
+			}
+		}
+	}
+
+	return actionsByType, contexts
 }
 
 type Config struct {

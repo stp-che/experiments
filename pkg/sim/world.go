@@ -51,7 +51,6 @@ func buildWalls(w *World, totalLenght int) {
 	if totalLenght == 0 {
 		return
 	}
-	rand.Seed(time.Now().UnixNano())
 	// TODO: check if totalLength >= world size
 	built := 0
 	building := true
@@ -72,7 +71,6 @@ func buildWalls(w *World, totalLenght int) {
 }
 
 func randomWalk(w *World, keepingDirection int, step func(*Region) bool) {
-	rand.Seed(time.Now().UnixNano())
 	currentPos := w.RandomPos()
 	dirs := [4]Direction{Up, Right, Down, Left}
 	currentDir := Up
@@ -97,7 +95,6 @@ func randomWalk(w *World, keepingDirection int, step func(*Region) bool) {
 }
 
 func (w *World) RandomPos() int {
-	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(w.Cols * w.Rows)
 }
 

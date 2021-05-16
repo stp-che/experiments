@@ -3,7 +3,6 @@ package sim
 import (
 	"log"
 	"math/rand"
-	"time"
 )
 
 type Direction byte
@@ -20,7 +19,6 @@ const (
 )
 
 func randomDirection() Direction {
-	rand.Seed(time.Now().UnixNano())
 	return Direction(rand.Intn(7) + 1)
 }
 

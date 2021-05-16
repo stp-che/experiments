@@ -6,6 +6,10 @@ const (
 	AMove ActionType = iota + 1
 )
 
+var actionTypesByPriority = []ActionType{
+	AMove,
+}
+
 type Action struct {
 	Type      ActionType
 	Direction Direction
@@ -25,33 +29,36 @@ func (a *Action) TargetPos() int {
 	return a.targetPos
 }
 
-// func (a *Action) Changes() []change {
-// 	if a.changes == nil {
-// 		a.changes = []change{}
-// 	}
-// 	return a.changes
-// }
-
+// Checks whether the action is possible considering the current state of the world
+// It does not take into account actions that are going to be performed by other bots in this step
 func (a *Action) IsPossible() bool {
 	switch a.Type {
 	case AMove:
-		return a.targetPos >= 0
+		return a.targetPos >= 0 && !a.world.Regions[a.targetPos].Busy()
 	default:
 		return false
 	}
 }
 
-func (a *Action) Apply(ctx map[int]int) {
+// Returns a list of changes caused by the action
+// ctx contains number of actions of the same type for the position (i.e. map[targetPos]count)
+// So for example for AMove action ctx[targetPos] > 1 means that some other bots are going to move to the same position
+// Thus the action can not be performed and has no effect
+func (a *Action) Effect(ctx map[int]int) []change {
 	if !a.IsPossible() {
-		return
+		return nil
 	}
 	switch a.Type {
 	case AMove:
-		(&clearReg{a.world.Regions[a.bot.Pos]}).Apply()
-		(&putBot{
-			Reg: a.world.Regions[a.targetPos],
-			Bot: a.bot,
-			Pos: a.targetPos,
-		}).Apply()
+		return []change{
+			&clearReg{a.world.Regions[a.bot.Pos]},
+			&putBot{
+				Reg: a.world.Regions[a.targetPos],
+				Bot: a.bot,
+				Pos: a.targetPos,
+			},
+		}
+	default:
+		return nil
 	}
 }

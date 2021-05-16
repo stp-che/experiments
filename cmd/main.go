@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"time"
 
 	"experiments/pkg/sim"
@@ -16,6 +17,7 @@ var simConfig = sim.Config{
 }
 
 func run() {
+	rand.Seed(time.Now().UnixNano())
 	sim := sim.NewSimulation(simConfig)
 	simUi, err := ui.New(sim)
 	if err != nil {
