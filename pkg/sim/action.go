@@ -32,11 +32,26 @@ func (a *Action) TargetPos() int {
 // Checks whether the action is possible considering the current state of the world
 // It does not take into account actions that are going to be performed by other bots in this step
 func (a *Action) IsPossible() bool {
+	if a.targetPos < 0 {
+		return false
+	}
 	switch a.Type {
 	case AMove:
-		return a.targetPos >= 0 && !a.world.Regions[a.targetPos].Busy()
+		return !a.world.Regions[a.targetPos].Busy()
 	default:
 		return false
+	}
+}
+
+func (a *Action) hasEffect(ctx map[int]int) bool {
+	if !a.IsPossible() {
+		return false
+	}
+	switch a.Type {
+	case AMove:
+		return ctx[a.targetPos] == 1
+	default:
+		return true
 	}
 }
 
@@ -45,7 +60,7 @@ func (a *Action) IsPossible() bool {
 // So for example for AMove action ctx[targetPos] > 1 means that some other bots are going to move to the same position
 // Thus the action can not be performed and has no effect
 func (a *Action) Effect(ctx map[int]int) []change {
-	if !a.IsPossible() {
+	if !a.hasEffect(ctx) {
 		return nil
 	}
 	switch a.Type {
