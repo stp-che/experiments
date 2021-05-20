@@ -2,17 +2,17 @@ package sim
 
 import "testing"
 
-type testBotCtrl struct {
+type testBotGenome struct {
 	actions []*Action
 	i       int
 }
 
-func (c *testBotCtrl) SetActions(actions []*Action) {
+func (c *testBotGenome) SetActions(actions []*Action) {
 	c.actions = actions
 	c.i = 0
 }
 
-func (c *testBotCtrl) NextAction(_ *World, _ int) *Action {
+func (c *testBotGenome) NextAction(_ *World, _ int) *Action {
 	a := c.actions[c.i%len(c.actions)]
 	c.i++
 	return a
@@ -32,7 +32,7 @@ func max(i, j int) int {
 	return j
 }
 
-func prepare(c testSimConfig) (*Simulation, []*testBotCtrl) {
+func prepare(c testSimConfig) (*Simulation, []*testBotGenome) {
 	world := newWorld(max(c.W, 5), max(c.H, 5))
 
 	if c.Walls != nil {
@@ -42,11 +42,11 @@ func prepare(c testSimConfig) (*Simulation, []*testBotCtrl) {
 	}
 
 	botsCount := len(c.BotsPos)
-	ctrls := make([]*testBotCtrl, botsCount)
+	genomes := make([]*testBotGenome, botsCount)
 	bots := make([]*Bot, botsCount)
 	for i := 0; i < botsCount; i++ {
-		ctrls[i] = &testBotCtrl{}
-		bots[i] = (&Bot{}).Init(world, ctrls[i])
+		genomes[i] = &testBotGenome{}
+		bots[i] = (&Bot{Genome: genomes[i]}).Init(world)
 		pos := c.BotsPos[i]
 		(&putBot{
 			Bot: bots[i],
@@ -60,7 +60,7 @@ func prepare(c testSimConfig) (*Simulation, []*testBotCtrl) {
 		Bots:  bots,
 	}
 
-	return sim, ctrls
+	return sim, genomes
 }
 
 type moveTestCase struct {

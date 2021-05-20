@@ -43,7 +43,7 @@ func NewSimulation(cfg Config) *Simulation {
 func createBots(n int, w *World) []*Bot {
 	bots := make([]*Bot, n)
 	for i := 0; i < n; i++ {
-		bots[i] = (&Bot{}).Init(w, nil)
+		bots[i] = (&Bot{Genome: &Genome{}}).Init(w)
 	}
 	return bots
 }

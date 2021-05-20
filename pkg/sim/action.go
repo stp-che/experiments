@@ -1,5 +1,7 @@
 package sim
 
+import "math/rand"
+
 type ActionType byte
 
 const (
@@ -75,5 +77,12 @@ func (a *Action) Effect(ctx map[int]int) []change {
 		}
 	default:
 		return nil
+	}
+}
+
+func randomAction() *Action {
+	return &Action{
+		Type:      actionTypesByPriority[rand.Intn(len(actionTypesByPriority))],
+		Direction: randomDirection(),
 	}
 }
