@@ -1,9 +1,11 @@
 package sim
 
 type Simulation struct {
-	World    *World
-	Bots     []*Bot
-	finished bool
+	World        *World
+	Bots         []*Bot
+	Steps        int
+	finished     bool
+	foodNextStep int
 }
 
 // func (s *Simulation) Run(updates chan interface{}) {
@@ -50,6 +52,10 @@ func createBots(n int, w *World) []*Bot {
 
 func (s *Simulation) Step() {
 	if !s.finished {
+		if s.Steps == s.foodNextStep {
+			s.generateFood()
+		}
+
 		actionsByType, contexts := s.nextActionsAndContexts()
 		for _, aType := range actionTypesByPriority {
 			actions, ok := actionsByType[aType]
@@ -69,9 +75,21 @@ func (s *Simulation) Step() {
 			}
 		}
 
+		aliveBotsCount := 0
 		for _, bot := range s.Bots {
+			if !bot.IsAlive() {
+				continue
+			}
+
+			aliveBotsCount++
 			bot.StepDone()
+			if !bot.IsAlive() {
+				(&clearReg{s.World.Regions[bot.Pos]}).Apply()
+			}
 		}
+
+		s.Steps++
+		s.finished = s.finished || aliveBotsCount == 0
 	}
 }
 
@@ -79,6 +97,10 @@ func (s *Simulation) nextActionsAndContexts() (map[ActionType][]*Action, map[Act
 	actionsByType := map[ActionType][]*Action{}
 	contexts := map[ActionType]map[int]int{}
 	for _, bot := range s.Bots {
+		if !bot.IsAlive() {
+			continue
+		}
+
 		a := bot.NextAction()
 		if actions, ok := actionsByType[a.Type]; ok {
 			actionsByType[a.Type] = append(actions, a)
@@ -98,6 +120,13 @@ func (s *Simulation) nextActionsAndContexts() (map[ActionType][]*Action, map[Act
 	}
 
 	return actionsByType, contexts
+}
+
+func (s *Simulation) generateFood() {
+	for _, pos := range s.World.RandomEmptyPositions(100) {
+		s.World.Regions[pos].Content = RCFood
+	}
+	s.foodNextStep += 30
 }
 
 type Config struct {

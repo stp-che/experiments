@@ -24,3 +24,12 @@ func (e *putBot) Apply() {
 	e.Reg.Bot = e.Bot
 	e.Reg.Content = RCBot
 }
+
+type feedBot struct {
+	Bot    *Bot
+	Energy int
+}
+
+func (e *feedBot) Apply() {
+	e.Bot.Energy += e.Energy
+}

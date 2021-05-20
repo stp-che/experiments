@@ -6,10 +6,16 @@ type ActionType byte
 
 const (
 	AMove ActionType = iota + 1
+	AEat
 )
 
 var actionTypesByPriority = []ActionType{
+	AEat,
 	AMove,
+}
+
+var energyCostMultipliers = map[ActionType]int{
+	AMove: 2,
 }
 
 type Action struct {
@@ -31,6 +37,10 @@ func (a *Action) TargetPos() int {
 	return a.targetPos
 }
 
+func (a *Action) TargetReg() *Region {
+	return a.world.Regions[a.targetPos]
+}
+
 // Checks whether the action is possible considering the current state of the world
 // It does not take into account actions that are going to be performed by other bots in this step
 func (a *Action) IsPossible() bool {
@@ -39,7 +49,9 @@ func (a *Action) IsPossible() bool {
 	}
 	switch a.Type {
 	case AMove:
-		return !a.world.Regions[a.targetPos].Busy()
+		return !a.TargetReg().Busy()
+	case AEat:
+		return a.TargetReg().Content == RCFood
 	default:
 		return false
 	}
@@ -70,14 +82,30 @@ func (a *Action) Effect(ctx map[int]int) []change {
 		return []change{
 			&clearReg{a.world.Regions[a.bot.Pos]},
 			&putBot{
-				Reg: a.world.Regions[a.targetPos],
+				Reg: a.TargetReg(),
 				Bot: a.bot,
 				Pos: a.targetPos,
 			},
 		}
+	case AEat:
+		return []change{
+			&feedBot{
+				Bot: a.bot,
+				// food is shared among all bots eating from the same region
+				Energy: 200 / ctx[a.targetPos],
+			},
+			&clearReg{a.TargetReg()},
+		}
 	default:
 		return nil
 	}
+}
+
+func (a *Action) EnergyCostMultiplier() int {
+	if m, set := energyCostMultipliers[a.Type]; set {
+		return m
+	}
+	return 1
 }
 
 func randomAction() *Action {

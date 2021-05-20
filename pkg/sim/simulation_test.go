@@ -17,12 +17,16 @@ func (c *testBotGenome) NextAction(_ *World, _ int) *Action {
 	c.i++
 	return a
 }
+func (c *testBotGenome) EnergyCost() int {
+	return 0
+}
 
 type testSimConfig struct {
 	W       int
 	H       int
 	BotsPos []int
 	Walls   []int
+	Food    []int
 }
 
 func max(i, j int) int {
@@ -38,6 +42,12 @@ func prepare(c testSimConfig) (*Simulation, []*testBotGenome) {
 	if c.Walls != nil {
 		for _, pos := range c.Walls {
 			world.Regions[pos].Content = RCWall
+		}
+	}
+
+	if c.Food != nil {
+		for _, pos := range c.Food {
+			world.Regions[pos].Content = RCFood
 		}
 	}
 
@@ -123,7 +133,7 @@ func checkWorldState(t *testing.T, w *World, s testWorldState) {
 	}
 }
 
-func TestStep(t *testing.T) {
+func testMoveActions(t *testing.T) {
 	c := func(s string, p1 int, dir Direction, p2 int) *moveTestCase {
 		return &moveTestCase{
 			Desc:       s,
@@ -151,8 +161,8 @@ func TestStep(t *testing.T) {
 		c("Going Left out of bounds", 15, Left, 15),
 	}
 	for _, c := range cases {
-		sim, ctrls := prepare(testSimConfig{BotsPos: []int{c.InitialPos}})
-		ctrls[0].SetActions([]*Action{
+		sim, genomes := prepare(testSimConfig{BotsPos: []int{c.InitialPos}})
+		genomes[0].SetActions([]*Action{
 			{Type: AMove, Direction: c.Dir},
 		})
 		sim.Step()
@@ -173,11 +183,11 @@ func TestStep(t *testing.T) {
 	}
 	for _, c := range cases {
 		walls := []int{6, 7, 8, 11, 13, 16, 17, 18}
-		sim, ctrls := prepare(testSimConfig{
+		sim, genomes := prepare(testSimConfig{
 			Walls:   walls,
 			BotsPos: []int{c.InitialPos},
 		})
-		ctrls[0].SetActions([]*Action{
+		genomes[0].SetActions([]*Action{
 			{Type: AMove, Direction: c.Dir},
 		})
 		sim.Step()
@@ -187,11 +197,11 @@ func TestStep(t *testing.T) {
 		})
 	}
 
-	sim, ctrls := prepare(testSimConfig{BotsPos: []int{0, 1}})
-	ctrls[0].SetActions([]*Action{
+	sim, genomes := prepare(testSimConfig{BotsPos: []int{0, 1}})
+	genomes[0].SetActions([]*Action{
 		{Type: AMove, Direction: Right},
 	})
-	ctrls[1].SetActions([]*Action{
+	genomes[1].SetActions([]*Action{
 		{Type: AMove, Direction: Down},
 	})
 	sim.Step()
@@ -199,15 +209,79 @@ func TestStep(t *testing.T) {
 		Bots: map[int]*Bot{0: sim.Bots[0], 6: sim.Bots[1]},
 	})
 
-	sim, ctrls = prepare(testSimConfig{BotsPos: []int{0, 1}})
-	ctrls[0].SetActions([]*Action{
+	sim, genomes = prepare(testSimConfig{BotsPos: []int{0, 1}})
+	genomes[0].SetActions([]*Action{
 		{Type: AMove, Direction: DownRight},
 	})
-	ctrls[1].SetActions([]*Action{
+	genomes[1].SetActions([]*Action{
 		{Type: AMove, Direction: Down},
 	})
 	sim.Step()
 	checkWorldState(t, sim.World, testWorldState{
 		Bots: map[int]*Bot{0: sim.Bots[0], 1: sim.Bots[1]},
 	})
+
+	sim, genomes = prepare(testSimConfig{BotsPos: []int{0}, Food: []int{1}})
+	genomes[0].SetActions([]*Action{
+		{Type: AMove, Direction: Right},
+	})
+	sim.Step()
+	checkWorldState(t, sim.World, testWorldState{
+		Bots: map[int]*Bot{1: sim.Bots[0]},
+	})
+}
+
+func assertBotEnergy(t *testing.T, bot *Bot, val int) {
+	if bot.Energy != val {
+		t.Errorf("Expected bot Energy to be %d, got %d", val, bot.Energy)
+	}
+}
+
+func testEatActions(t *testing.T) {
+	sim, genomes := prepare(testSimConfig{
+		BotsPos: []int{0},
+		Walls:   []int{1},
+		Food:    []int{5},
+	})
+	genomes[0].SetActions([]*Action{
+		{Type: AEat, Direction: Up},
+		{Type: AEat, Direction: Right},
+		{Type: AEat, Direction: DownRight},
+		{Type: AEat, Direction: Down},
+	})
+	sim.Step()
+	assertBotEnergy(t, sim.Bots[0], 300)
+	sim.Step()
+	assertBotEnergy(t, sim.Bots[0], 300)
+	sim.Step()
+	assertBotEnergy(t, sim.Bots[0], 300)
+	sim.Step()
+	assertBotEnergy(t, sim.Bots[0], 500)
+	checkWorldState(t, sim.World, testWorldState{
+		Walls: []int{1},
+		Bots:  map[int]*Bot{0: sim.Bots[0]},
+	})
+
+	sim, genomes = prepare(testSimConfig{
+		BotsPos: []int{0, 1, 5},
+		Food:    []int{6},
+	})
+	genomes[0].SetActions([]*Action{
+		{Type: AEat, Direction: DownRight},
+	})
+	genomes[1].SetActions([]*Action{
+		{Type: AEat, Direction: Down},
+	})
+	genomes[2].SetActions([]*Action{
+		{Type: AEat, Direction: Right},
+	})
+	sim.Step()
+	assertBotEnergy(t, sim.Bots[0], 366)
+	assertBotEnergy(t, sim.Bots[1], 366)
+	assertBotEnergy(t, sim.Bots[2], 366)
+}
+
+func TestStep(t *testing.T) {
+	testMoveActions(t)
+	testEatActions(t)
 }
