@@ -12,13 +12,18 @@ import (
 )
 
 var simConfig = sim.Config{
-	WorldWidth:  100,
-	WorldHeight: 60,
+	WorldWidth:    100,
+	WorldHeight:   60,
+	GenomesNumber: 4,
+	GroupSize:     4,
 }
 
 func run() {
 	rand.Seed(time.Now().UnixNano())
-	sim := sim.NewSimulation(simConfig)
+	sim, err := sim.NewSimulation(simConfig)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	simUi, err := ui.New(sim)
 	if err != nil {
 		log.Fatalln(err)
