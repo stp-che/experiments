@@ -14,4 +14,10 @@ var (
 	wallColor = colornames.Brown
 	botColor  = colornames.Darkcyan
 	foodColor = colornames.Green
+
+	botWidth      = 65
+	botHeight     = 40
+	botMargin     = 3
+	aliveBotColor = colornames.Darkcyan
+	deadBotColor  = colornames.Darkgray
 )

@@ -83,7 +83,7 @@ func (s *Simulation) createBots() error {
 			}).Apply()
 			n++
 		}
-		s.groups[i].Bots = s.Bots[i*s.cfg.GroupSize : (i+1)*s.cfg.GroupSize-1]
+		s.groups[i].Bots = s.Bots[i*s.cfg.GroupSize : (i+1)*s.cfg.GroupSize]
 	}
 	return nil
 }

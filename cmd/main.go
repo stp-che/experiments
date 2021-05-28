@@ -14,8 +14,8 @@ import (
 var simConfig = sim.Config{
 	WorldWidth:    100,
 	WorldHeight:   60,
-	GenomesNumber: 4,
-	GroupSize:     4,
+	GenomesNumber: 8,
+	GroupSize:     8,
 }
 
 func run() {
