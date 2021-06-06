@@ -16,6 +16,7 @@ var simConfig = sim.Config{
 	WorldHeight:   60,
 	GenomesNumber: 8,
 	GroupSize:     8,
+	FoodAmount:    100,
 }
 
 func run() {

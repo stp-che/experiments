@@ -115,6 +115,10 @@ func (w *World) XYPos(n int) (int, int) {
 }
 
 func (w *World) RandomEmptyPositions(n int) []int {
+	if n == 0 {
+		return []int{}
+	}
+
 	wSize := w.Cols * w.Rows
 	freeRegIdxs := make([]int, 0, wSize)
 	for i, r := range w.Regions {

@@ -3,12 +3,13 @@ package sim
 const DEFAULT_ENERGY = 300
 
 type Bot struct {
-	world      *World
-	Genome     iGenome
-	Energy     int
-	Age        int
-	Pos        int
-	nextAction *Action
+	world              *World
+	Genome             iGenome
+	Energy             int
+	Age                int
+	Pos                int
+	nextAction         *Action
+	nextActionComputed bool
 }
 
 func (b *Bot) Init(world *World) *Bot {
@@ -18,8 +19,12 @@ func (b *Bot) Init(world *World) *Bot {
 }
 
 func (b *Bot) NextAction() *Action {
-	if b.nextAction == nil {
-		b.nextAction = b.Genome.NextAction(b.world, b.Pos).Bind(b.world, b)
+	if !b.nextActionComputed {
+		b.nextAction = b.Genome.NextAction(b.world, b.Pos)
+		if b.nextAction != nil {
+			b.nextAction.Bind(b.world, b)
+		}
+		b.nextActionComputed = true
 	}
 	return b.nextAction
 }
@@ -35,6 +40,7 @@ func (b *Bot) StepDone() {
 	}
 	b.Energy -= energyLost
 	b.nextAction = nil
+	b.nextActionComputed = false
 	b.Age++
 }
 

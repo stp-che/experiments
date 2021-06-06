@@ -281,7 +281,19 @@ func testEatActions(t *testing.T) {
 	assertBotEnergy(t, sim.Bots[2], 366)
 }
 
+func testNilActions(t *testing.T) {
+	sim, genomes := prepare(testSimConfig{
+		BotsPos: []int{0},
+	})
+	genomes[0].SetActions([]*Action{nil})
+	sim.Step()
+	checkWorldState(t, sim.World, testWorldState{
+		Bots: map[int]*Bot{0: sim.Bots[0]},
+	})
+}
+
 func TestStep(t *testing.T) {
 	testMoveActions(t)
 	testEatActions(t)
+	testNilActions(t)
 }

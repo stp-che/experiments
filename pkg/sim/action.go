@@ -1,8 +1,22 @@
 package sim
 
-import "math/rand"
+import (
+	"fmt"
+	"math/rand"
+)
 
 type ActionType byte
+
+func (t ActionType) String() string {
+	switch t {
+	case AMove:
+		return "Move"
+	case AEat:
+		return "Eat"
+	default:
+		return fmt.Sprintf("%d", t)
+	}
+}
 
 const (
 	AMove ActionType = iota + 1
@@ -13,6 +27,8 @@ var actionTypesByPriority = []ActionType{
 	AEat,
 	AMove,
 }
+
+var actionTypesNum = len(actionTypesByPriority)
 
 var energyCostMultipliers = map[ActionType]int{
 	AMove: 2,
@@ -91,7 +107,7 @@ func (a *Action) Effect(ctx map[int]int) []change {
 		return []change{
 			&feedBot{
 				Bot: a.bot,
-				// food is shared among all bots eating from the same region
+				// food is shared equally among all bots eating from the same region
 				Energy: 200 / ctx[a.targetPos],
 			},
 			&clearReg{a.TargetReg()},
@@ -110,7 +126,11 @@ func (a *Action) EnergyCostMultiplier() int {
 
 func randomAction() *Action {
 	return &Action{
-		Type:      actionTypesByPriority[rand.Intn(len(actionTypesByPriority))],
+		Type:      randomActionType(),
 		Direction: randomDirection(),
 	}
+}
+
+func randomActionType() ActionType {
+	return actionTypesByPriority[rand.Intn(len(actionTypesByPriority))]
 }

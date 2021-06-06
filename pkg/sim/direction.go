@@ -1,6 +1,7 @@
 package sim
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
 )
@@ -43,5 +44,28 @@ func (d Direction) DeltaXY() (int, int) {
 	default:
 		log.Fatalf("wrong direction %v\n", d)
 		return 0, 0
+	}
+}
+
+func (d Direction) String() string {
+	switch d {
+	case UpLeft:
+		return "UpLeft"
+	case Up:
+		return "Up"
+	case UpRight:
+		return "UpRight"
+	case Right:
+		return "Right"
+	case DownRight:
+		return "DownRight"
+	case Down:
+		return "Down"
+	case DownLeft:
+		return "DownLeft"
+	case Left:
+		return "Left"
+	default:
+		return fmt.Sprintf("%d", d)
 	}
 }

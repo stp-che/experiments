@@ -60,7 +60,7 @@ func (s *Simulation) createGenomes() {
 	s.Genomes = make([]*Genome, s.cfg.GenomesNumber)
 	s.groups = make([]BotsGroup, s.cfg.GenomesNumber)
 	for i := 0; i < s.cfg.GenomesNumber; i++ {
-		s.Genomes[i] = &Genome{}
+		s.Genomes[i] = randomGenome()
 		s.groups[i] = BotsGroup{Genome: s.Genomes[i]}
 	}
 }
@@ -130,6 +130,10 @@ func (s *Simulation) nextActionsAndContexts() (map[ActionType][]*Action, map[Act
 		}
 
 		a := bot.NextAction()
+		if a == nil {
+			continue
+		}
+
 		if actions, ok := actionsByType[a.Type]; ok {
 			actionsByType[a.Type] = append(actions, a)
 		} else {
@@ -167,7 +171,7 @@ func (s *Simulation) updateBotsStates() int {
 }
 
 func (s *Simulation) generateFood() {
-	for _, pos := range s.World.RandomEmptyPositions(100) {
+	for _, pos := range s.World.RandomEmptyPositions(s.cfg.FoodAmount) {
 		s.World.Regions[pos].Content = RCFood
 	}
 	s.foodNextStep += 30
@@ -188,4 +192,6 @@ type Config struct {
 	GroupSize int
 	// Number of mutants per group
 	MutantsPerGroup int
+	// Amount of ranges where food appears
+	FoodAmount int
 }
