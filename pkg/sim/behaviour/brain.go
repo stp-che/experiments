@@ -21,69 +21,37 @@ type IBrain interface {
 	Process(OuterInput, InnerInput) *ProcessingResult
 }
 
-type manipulator struct {
-	ActionType ActionType
-	DirValues  [8]int8
-}
-
 type Brain struct {
-	Manipulators []*manipulator
+	OuterAnalyzersCount int
+	OuterAnalyzerNet    OuterAnalyzerNet
+	ManipulationSystem  ManipulationSystem
 }
 
 func (b *Brain) Process(o OuterInput, i InnerInput) *ProcessingResult {
-	activity := make([]int16, len(b.Manipulators))
-	for i := 0; i < len(activity); i++ {
-		activity[i] = int16(rand.Intn(255) - 100)
-	}
+	activation := b.OuterAnalyzerNet.Activation(b.randomOuterSignal())
 	return &ProcessingResult{
-		Decision:   computeIntention(b.Manipulators, activity),
+		Decision:   b.ManipulationSystem.ComputeIntention(activation),
 		EnergyCost: 10,
 	}
 }
 
-func computeIntention(mnps []*manipulator, activity []int16) *Intention {
-	decisionTable := make(map[ActionType]*[8]int16)
-	// TODO: check genes and activity have the same len
-	for i, mn := range mnps {
-		decisionRow, ok := decisionTable[mn.ActionType]
-		if !ok {
-			decisionRow = &[8]int16{}
-			decisionTable[mn.ActionType] = decisionRow
-		}
-		for j, v := range mn.DirValues {
-			decisionRow[j] += int16(v) * activity[i]
-		}
+func RandomBrain() *Brain {
+	b := &Brain{
+		OuterAnalyzersCount: rand.Intn(10) + 1,
+		ManipulationSystem:  randomManipulationSystem(),
 	}
-	var max int16 = 0
-	var intention *Intention
-	for aType, values := range decisionTable {
-		for i, v := range values {
-			if max < v {
-				if intention == nil {
-					intention = &Intention{}
-				}
-				intention.ActionType = aType
-				intention.Direction = core.Direction(i + 1)
-				max = v
-			}
-		}
-	}
-	return intention
+	b.OuterAnalyzerNet = randomOuterAnalyzerNet(b.OuterAnalyzersCount, len(b.ManipulationSystem))
+	return b
 }
 
-func RandomBrain() *Brain {
-	mnps := make([]*manipulator, rand.Intn(5)+1)
-	for i := 0; i < len(mnps); i++ {
-		dirValues := [8]int8{}
-		for i := 0; i < 8; i++ {
-			dirValues[i] = int8(rand.Intn(255) - 128)
+func (b *Brain) randomOuterSignal() map[uint8][]uint8 {
+	res := make(map[uint8][]uint8)
+	for i := 0; i < 30; i++ {
+		analyser := rand.Intn(b.OuterAnalyzersCount)
+		if _, ok := res[uint8(analyser)]; !ok {
+			res[uint8(analyser)] = make([]uint8, 4)
 		}
-		mnps[i] = &manipulator{
-			ActionType: randomActionType(),
-			DirValues:  dirValues,
-		}
+		res[uint8(analyser)][rand.Intn(4)] += 1
 	}
-	return &Brain{
-		Manipulators: mnps,
-	}
+	return res
 }
