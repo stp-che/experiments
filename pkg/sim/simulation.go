@@ -1,17 +1,20 @@
 package sim
 
-import "errors"
+import (
+	"errors"
+	"experiments/pkg/sim/behaviour"
+)
 
 type BotsGroup struct {
-	Genome *Genome
-	Bots   []*Bot
+	Brain *behaviour.Brain
+	Bots  []*Bot
 }
 
 type Simulation struct {
 	cfg          Config
 	World        *World
 	Bots         []*Bot
-	Genomes      []*Genome
+	Brains       []*behaviour.Brain
 	Steps        int
 	finished     bool
 	foodNextStep int
@@ -57,25 +60,25 @@ func (s *Simulation) createWorld() {
 }
 
 func (s *Simulation) createGenomes() {
-	s.Genomes = make([]*Genome, s.cfg.GenomesNumber)
-	s.groups = make([]BotsGroup, s.cfg.GenomesNumber)
-	for i := 0; i < s.cfg.GenomesNumber; i++ {
-		s.Genomes[i] = randomGenome()
-		s.groups[i] = BotsGroup{Genome: s.Genomes[i]}
+	s.Brains = make([]*behaviour.Brain, s.cfg.BrainsNumber)
+	s.groups = make([]BotsGroup, s.cfg.BrainsNumber)
+	for i := 0; i < s.cfg.BrainsNumber; i++ {
+		s.Brains[i] = behaviour.RandomBrain()
+		s.groups[i] = BotsGroup{Brain: s.Brains[i]}
 	}
 }
 
 func (s *Simulation) createBots() error {
-	botsNumber := s.cfg.GenomesNumber * s.cfg.GroupSize
+	botsNumber := s.cfg.BrainsNumber * s.cfg.GroupSize
 	ps := s.World.RandomEmptyPositions(botsNumber)
 	if botsNumber > len(ps) {
 		return NoPlaceForBots
 	}
 	s.Bots = make([]*Bot, botsNumber)
 	n := 0
-	for i, g := range s.Genomes {
+	for i, b := range s.Brains {
 		for j := 0; j < s.cfg.GroupSize; j++ {
-			s.Bots[n] = (&Bot{Genome: g}).Init(s.World)
+			s.Bots[n] = (&Bot{Brain: b}).Init(s.World)
 			(&putBot{
 				Bot: s.Bots[n],
 				Reg: s.World.Regions[ps[n]],
@@ -121,9 +124,9 @@ func (s *Simulation) performStepActions() {
 	}
 }
 
-func (s *Simulation) nextActionsAndContexts() (map[ActionType][]*Action, map[ActionType]map[int]int) {
-	actionsByType := map[ActionType][]*Action{}
-	contexts := map[ActionType]map[int]int{}
+func (s *Simulation) nextActionsAndContexts() (map[behaviour.ActionType][]*Action, map[behaviour.ActionType]map[int]int) {
+	actionsByType := map[behaviour.ActionType][]*Action{}
+	contexts := map[behaviour.ActionType]map[int]int{}
 	for _, bot := range s.Bots {
 		if !bot.IsAlive() {
 			continue
@@ -186,8 +189,8 @@ type Config struct {
 	WorldWidth int
 	// Number of regions vertically
 	WorldHeight int
-	// Number of different genome per simulation
-	GenomesNumber int
+	// Number of different brains per simulation
+	BrainsNumber int
 	// Size of group based on one genome
 	GroupSize int
 	// Number of mutants per group

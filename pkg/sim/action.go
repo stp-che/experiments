@@ -1,42 +1,22 @@
 package sim
 
 import (
-	"fmt"
-	"math/rand"
+	"experiments/pkg/sim/behaviour"
+	"experiments/pkg/sim/core"
 )
 
-type ActionType byte
-
-func (t ActionType) String() string {
-	switch t {
-	case AMove:
-		return "Move"
-	case AEat:
-		return "Eat"
-	default:
-		return fmt.Sprintf("%d", t)
-	}
+var actionTypesByPriority = []behaviour.ActionType{
+	behaviour.AEat,
+	behaviour.AMove,
 }
 
-const (
-	AMove ActionType = iota + 1
-	AEat
-)
-
-var actionTypesByPriority = []ActionType{
-	AEat,
-	AMove,
-}
-
-var actionTypesNum = len(actionTypesByPriority)
-
-var energyCostMultipliers = map[ActionType]int{
-	AMove: 2,
+var energyCostMultipliers = map[behaviour.ActionType]int{
+	behaviour.AMove: 2,
 }
 
 type Action struct {
-	Type      ActionType
-	Direction Direction
+	Type      behaviour.ActionType
+	Direction core.Direction
 	world     *World
 	bot       *Bot
 	targetPos int
@@ -64,9 +44,9 @@ func (a *Action) IsPossible() bool {
 		return false
 	}
 	switch a.Type {
-	case AMove:
+	case behaviour.AMove:
 		return !a.TargetReg().Busy()
-	case AEat:
+	case behaviour.AEat:
 		return a.TargetReg().Content == RCFood
 	default:
 		return false
@@ -78,7 +58,7 @@ func (a *Action) hasEffect(ctx map[int]int) bool {
 		return false
 	}
 	switch a.Type {
-	case AMove:
+	case behaviour.AMove:
 		return ctx[a.targetPos] == 1
 	default:
 		return true
@@ -94,7 +74,7 @@ func (a *Action) Effect(ctx map[int]int) []change {
 		return nil
 	}
 	switch a.Type {
-	case AMove:
+	case behaviour.AMove:
 		return []change{
 			&clearReg{a.world.Regions[a.bot.Pos]},
 			&putBot{
@@ -103,7 +83,7 @@ func (a *Action) Effect(ctx map[int]int) []change {
 				Pos: a.targetPos,
 			},
 		}
-	case AEat:
+	case behaviour.AEat:
 		return []change{
 			&feedBot{
 				Bot: a.bot,
@@ -124,13 +104,13 @@ func (a *Action) EnergyCostMultiplier() int {
 	return 1
 }
 
-func randomAction() *Action {
-	return &Action{
-		Type:      randomActionType(),
-		Direction: randomDirection(),
-	}
-}
+// func randomAction() *Action {
+// 	return &Action{
+// 		Type:      randomActionType(),
+// 		Direction: core.RandomDirection(),
+// 	}
+// }
 
-func randomActionType() ActionType {
-	return actionTypesByPriority[rand.Intn(len(actionTypesByPriority))]
-}
+// func randomActionType() behaviour.ActionType {
+// 	return actionTypesByPriority[rand.Intn(len(actionTypesByPriority))]
+// }

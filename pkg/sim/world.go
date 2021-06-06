@@ -1,6 +1,8 @@
 package sim
 
 import (
+	"experiments/pkg/sim/core"
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -13,6 +15,21 @@ const (
 	RCFood
 	RCBot
 )
+
+func (c RegionContent) String() string {
+	switch c {
+	case RCNone:
+		return "None"
+	case RCWall:
+		return "Wall"
+	case RCFood:
+		return "Food"
+	case RCBot:
+		return "Bot"
+	default:
+		return fmt.Sprintf("%d", c)
+	}
+}
 
 type Region struct {
 	Content RegionContent
@@ -31,7 +48,7 @@ type World struct {
 	Boundless bool
 }
 
-func (w *World) PossibleDirection(p int, d Direction) bool {
+func (w *World) PossibleDirection(p int, d core.Direction) bool {
 	return w.NextPos(p, d) >= 0
 }
 
@@ -72,9 +89,9 @@ func buildWalls(w *World, totalLenght int) {
 
 func randomWalk(w *World, keepingDirection int, step func(*Region) bool) {
 	currentPos := w.RandomPos()
-	dirs := [4]Direction{Up, Right, Down, Left}
-	currentDir := Up
-	dirsChoice := make([]Direction, 0, 4)
+	dirs := [4]core.Direction{core.Up, core.Right, core.Down, core.Left}
+	currentDir := core.Up
+	dirsChoice := make([]core.Direction, 0, 4)
 	for step(w.Regions[currentPos]) {
 		// fmt.Println("---------------")
 		// fmt.Printf("w.PossibleDirection(%v, %v): %v\n", currentPos, currentDir, w.PossibleDirection(currentPos, currentDir))
@@ -100,7 +117,7 @@ func (w *World) RandomPos() int {
 
 // Returns position of region next to the given one in given direction
 // Returns -1 if it is out of world bounds
-func (w *World) NextPos(pos int, d Direction) (res int) {
+func (w *World) NextPos(pos int, d core.Direction) (res int) {
 	dx, dy := d.DeltaXY()
 	x, y := w.XYPos(pos)
 	if x+dx < 0 || x+dx >= w.Cols || y+dy < 0 || y+dy >= w.Rows {

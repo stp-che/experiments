@@ -1,24 +1,25 @@
 package sim
 
-import "testing"
+import (
+	"experiments/pkg/sim/behaviour"
+	"experiments/pkg/sim/core"
+	"testing"
+)
 
-type testBotGenome struct {
-	actions []*Action
-	i       int
+type testBotBrain struct {
+	intentions []*behaviour.Intention
+	i          int
 }
 
-func (c *testBotGenome) SetActions(actions []*Action) {
-	c.actions = actions
-	c.i = 0
+func (b *testBotBrain) SetActions(actions []*behaviour.Intention) {
+	b.intentions = actions
+	b.i = 0
 }
 
-func (c *testBotGenome) NextAction(_ *World, _ int) *Action {
-	a := c.actions[c.i%len(c.actions)]
-	c.i++
-	return a
-}
-func (c *testBotGenome) EnergyCost() int {
-	return 0
+func (b *testBotBrain) Process(_ behaviour.OuterInput, _ behaviour.InnerInput) *behaviour.ProcessingResult {
+	i := b.intentions[b.i%len(b.intentions)]
+	b.i++
+	return &behaviour.ProcessingResult{Decision: i}
 }
 
 type testSimConfig struct {
@@ -36,7 +37,7 @@ func max(i, j int) int {
 	return j
 }
 
-func prepare(c testSimConfig) (*Simulation, []*testBotGenome) {
+func prepare(c testSimConfig) (*Simulation, []*testBotBrain) {
 	world := newWorld(max(c.W, 5), max(c.H, 5))
 
 	if c.Walls != nil {
@@ -52,11 +53,11 @@ func prepare(c testSimConfig) (*Simulation, []*testBotGenome) {
 	}
 
 	botsCount := len(c.BotsPos)
-	genomes := make([]*testBotGenome, botsCount)
+	brains := make([]*testBotBrain, botsCount)
 	bots := make([]*Bot, botsCount)
 	for i := 0; i < botsCount; i++ {
-		genomes[i] = &testBotGenome{}
-		bots[i] = (&Bot{Genome: genomes[i]}).Init(world)
+		brains[i] = &testBotBrain{}
+		bots[i] = (&Bot{Brain: brains[i]}).Init(world)
 		pos := c.BotsPos[i]
 		(&putBot{
 			Bot: bots[i],
@@ -70,13 +71,13 @@ func prepare(c testSimConfig) (*Simulation, []*testBotGenome) {
 		Bots:  bots,
 	}
 
-	return sim, genomes
+	return sim, brains
 }
 
 type moveTestCase struct {
 	Desc       string
 	InitialPos int
-	Dir        Direction
+	Dir        core.Direction
 	NewPos     int
 	Before     func()
 }
@@ -134,7 +135,7 @@ func checkWorldState(t *testing.T, w *World, s testWorldState) {
 }
 
 func testMoveActions(t *testing.T) {
-	c := func(s string, p1 int, dir Direction, p2 int) *moveTestCase {
+	c := func(s string, p1 int, dir core.Direction, p2 int) *moveTestCase {
 		return &moveTestCase{
 			Desc:       s,
 			InitialPos: p1,
@@ -143,27 +144,27 @@ func testMoveActions(t *testing.T) {
 		}
 	}
 	cases := []*moveTestCase{
-		c("Going UpLeft", 12, UpLeft, 6),
-		c("Going Up", 12, Up, 7),
-		c("Going UpRight", 12, UpRight, 8),
-		c("Going Right", 12, Right, 13),
-		c("Going DownRight", 12, DownRight, 18),
-		c("Going Down", 12, Down, 17),
-		c("Going DownLeft", 12, DownLeft, 16),
-		c("Going Left", 12, Left, 11),
-		c("Going UpLeft out of bounds", 0, UpLeft, 0),
-		c("Going Up out of bounds", 1, Up, 1),
-		c("Going UpRight out of bounds", 1, UpRight, 1),
-		c("Going Right out of bounds", 9, Right, 9),
-		c("Going DownRight out of bounds", 9, DownRight, 9),
-		c("Going Down out of bounds", 22, Down, 22),
-		c("Going DownLeft out of bounds", 22, DownLeft, 22),
-		c("Going Left out of bounds", 15, Left, 15),
+		c("Going UpLeft", 12, core.UpLeft, 6),
+		c("Going Up", 12, core.Up, 7),
+		c("Going UpRight", 12, core.UpRight, 8),
+		c("Going Right", 12, core.Right, 13),
+		c("Going DownRight", 12, core.DownRight, 18),
+		c("Going Down", 12, core.Down, 17),
+		c("Going DownLeft", 12, core.DownLeft, 16),
+		c("Going Left", 12, core.Left, 11),
+		c("Going UpLeft out of bounds", 0, core.UpLeft, 0),
+		c("Going Up out of bounds", 1, core.Up, 1),
+		c("Going UpRight out of bounds", 1, core.UpRight, 1),
+		c("Going Right out of bounds", 9, core.Right, 9),
+		c("Going DownRight out of bounds", 9, core.DownRight, 9),
+		c("Going Down out of bounds", 22, core.Down, 22),
+		c("Going DownLeft out of bounds", 22, core.DownLeft, 22),
+		c("Going Left out of bounds", 15, core.Left, 15),
 	}
 	for _, c := range cases {
 		sim, genomes := prepare(testSimConfig{BotsPos: []int{c.InitialPos}})
-		genomes[0].SetActions([]*Action{
-			{Type: AMove, Direction: c.Dir},
+		genomes[0].SetActions([]*behaviour.Intention{
+			{ActionType: behaviour.AMove, Direction: c.Dir},
 		})
 		sim.Step()
 		checkWorldState(t, sim.World, testWorldState{
@@ -172,14 +173,14 @@ func testMoveActions(t *testing.T) {
 	}
 
 	cases = []*moveTestCase{
-		c("Going UpLeft into the wall", 12, UpLeft, 12),
-		c("Going Up into the wall", 12, Up, 12),
-		c("Going UpRight into the wall", 12, UpRight, 12),
-		c("Going Right into the wall", 12, Right, 12),
-		c("Going DownRight into the wall", 12, DownRight, 12),
-		c("Going Down into the wall", 12, Down, 12),
-		c("Going DownLeft into the wall", 12, DownLeft, 12),
-		c("Going Left into the wall", 12, Left, 12),
+		c("Going UpLeft into the wall", 12, core.UpLeft, 12),
+		c("Going Up into the wall", 12, core.Up, 12),
+		c("Going UpRight into the wall", 12, core.UpRight, 12),
+		c("Going Right into the wall", 12, core.Right, 12),
+		c("Going DownRight into the wall", 12, core.DownRight, 12),
+		c("Going Down into the wall", 12, core.Down, 12),
+		c("Going DownLeft into the wall", 12, core.DownLeft, 12),
+		c("Going Left into the wall", 12, core.Left, 12),
 	}
 	for _, c := range cases {
 		walls := []int{6, 7, 8, 11, 13, 16, 17, 18}
@@ -187,8 +188,8 @@ func testMoveActions(t *testing.T) {
 			Walls:   walls,
 			BotsPos: []int{c.InitialPos},
 		})
-		genomes[0].SetActions([]*Action{
-			{Type: AMove, Direction: c.Dir},
+		genomes[0].SetActions([]*behaviour.Intention{
+			{ActionType: behaviour.AMove, Direction: c.Dir},
 		})
 		sim.Step()
 		checkWorldState(t, sim.World, testWorldState{
@@ -198,11 +199,11 @@ func testMoveActions(t *testing.T) {
 	}
 
 	sim, genomes := prepare(testSimConfig{BotsPos: []int{0, 1}})
-	genomes[0].SetActions([]*Action{
-		{Type: AMove, Direction: Right},
+	genomes[0].SetActions([]*behaviour.Intention{
+		{ActionType: behaviour.AMove, Direction: core.Right},
 	})
-	genomes[1].SetActions([]*Action{
-		{Type: AMove, Direction: Down},
+	genomes[1].SetActions([]*behaviour.Intention{
+		{ActionType: behaviour.AMove, Direction: core.Down},
 	})
 	sim.Step()
 	checkWorldState(t, sim.World, testWorldState{
@@ -210,11 +211,11 @@ func testMoveActions(t *testing.T) {
 	})
 
 	sim, genomes = prepare(testSimConfig{BotsPos: []int{0, 1}})
-	genomes[0].SetActions([]*Action{
-		{Type: AMove, Direction: DownRight},
+	genomes[0].SetActions([]*behaviour.Intention{
+		{ActionType: behaviour.AMove, Direction: core.DownRight},
 	})
-	genomes[1].SetActions([]*Action{
-		{Type: AMove, Direction: Down},
+	genomes[1].SetActions([]*behaviour.Intention{
+		{ActionType: behaviour.AMove, Direction: core.Down},
 	})
 	sim.Step()
 	checkWorldState(t, sim.World, testWorldState{
@@ -222,8 +223,8 @@ func testMoveActions(t *testing.T) {
 	})
 
 	sim, genomes = prepare(testSimConfig{BotsPos: []int{0}, Food: []int{1}})
-	genomes[0].SetActions([]*Action{
-		{Type: AMove, Direction: Right},
+	genomes[0].SetActions([]*behaviour.Intention{
+		{ActionType: behaviour.AMove, Direction: core.Right},
 	})
 	sim.Step()
 	checkWorldState(t, sim.World, testWorldState{
@@ -243,11 +244,11 @@ func testEatActions(t *testing.T) {
 		Walls:   []int{1},
 		Food:    []int{5},
 	})
-	genomes[0].SetActions([]*Action{
-		{Type: AEat, Direction: Up},
-		{Type: AEat, Direction: Right},
-		{Type: AEat, Direction: DownRight},
-		{Type: AEat, Direction: Down},
+	genomes[0].SetActions([]*behaviour.Intention{
+		{ActionType: behaviour.AEat, Direction: core.Up},
+		{ActionType: behaviour.AEat, Direction: core.Right},
+		{ActionType: behaviour.AEat, Direction: core.DownRight},
+		{ActionType: behaviour.AEat, Direction: core.Down},
 	})
 	sim.Step()
 	assertBotEnergy(t, sim.Bots[0], 300)
@@ -266,14 +267,14 @@ func testEatActions(t *testing.T) {
 		BotsPos: []int{0, 1, 5},
 		Food:    []int{6},
 	})
-	genomes[0].SetActions([]*Action{
-		{Type: AEat, Direction: DownRight},
+	genomes[0].SetActions([]*behaviour.Intention{
+		{ActionType: behaviour.AEat, Direction: core.DownRight},
 	})
-	genomes[1].SetActions([]*Action{
-		{Type: AEat, Direction: Down},
+	genomes[1].SetActions([]*behaviour.Intention{
+		{ActionType: behaviour.AEat, Direction: core.Down},
 	})
-	genomes[2].SetActions([]*Action{
-		{Type: AEat, Direction: Right},
+	genomes[2].SetActions([]*behaviour.Intention{
+		{ActionType: behaviour.AEat, Direction: core.Right},
 	})
 	sim.Step()
 	assertBotEnergy(t, sim.Bots[0], 366)
@@ -285,7 +286,7 @@ func testNilActions(t *testing.T) {
 	sim, genomes := prepare(testSimConfig{
 		BotsPos: []int{0},
 	})
-	genomes[0].SetActions([]*Action{nil})
+	genomes[0].SetActions([]*behaviour.Intention{nil})
 	sim.Step()
 	checkWorldState(t, sim.World, testWorldState{
 		Bots: map[int]*Bot{0: sim.Bots[0]},

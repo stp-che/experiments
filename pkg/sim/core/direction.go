@@ -1,4 +1,4 @@
-package sim
+package core
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ const (
 	Left
 )
 
-func randomDirection() Direction {
+func RandomDirection() Direction {
 	return Direction(rand.Intn(7) + 1)
 }
 

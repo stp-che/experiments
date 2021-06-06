@@ -12,11 +12,11 @@ import (
 )
 
 var simConfig = sim.Config{
-	WorldWidth:    100,
-	WorldHeight:   60,
-	GenomesNumber: 8,
-	GroupSize:     8,
-	FoodAmount:    100,
+	WorldWidth:   100,
+	WorldHeight:  60,
+	BrainsNumber: 8,
+	GroupSize:    8,
+	FoodAmount:   100,
 }
 
 func run() {
