@@ -21,14 +21,14 @@ func TestActivation(t *testing.T) {
 		{
 			Net: testNet,
 			Signal: map[uint8][]uint8{
-				0: []uint8{2, 1},
-				1: []uint8{1, 1},
+				0: {2, 1},
+				1: {1, 1},
 			},
 			Result: map[uint8]int16{5: 15, 8: 250},
 		},
 		{
 			Net:    testNet,
-			Signal: map[uint8][]uint8{2: []uint8{2, 1}},
+			Signal: map[uint8][]uint8{2: {2, 1}},
 			Result: map[uint8]int16{},
 		},
 	}

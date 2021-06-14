@@ -1,34 +1,23 @@
 package behaviour
 
 import (
-	"experiments/pkg/sim/core"
 	"math/rand"
 )
-
-type OuterInput struct {
-	Direction core.Direction
-	Signal    []uint8
-}
-
-type InnerInput []int
-
-type ProcessingResult struct {
-	Decision   *Intention
-	EnergyCost int
-}
 
 type IBrain interface {
 	Process(OuterInput, InnerInput) *ProcessingResult
 }
 
 type Brain struct {
+	OuterReceptor       OuterReceptor
 	OuterAnalyzersCount int
 	OuterAnalyzerNet    OuterAnalyzerNet
 	ManipulationSystem  ManipulationSystem
 }
 
 func (b *Brain) Process(o OuterInput, i InnerInput) *ProcessingResult {
-	activation := b.OuterAnalyzerNet.Activation(b.randomOuterSignal())
+	collectedSignal := b.OuterReceptor.CollectSignal(b.randomOuterSignal())
+	activation := b.OuterAnalyzerNet.Activation(collectedSignal)
 	return &ProcessingResult{
 		Decision:   b.ManipulationSystem.ComputeIntention(activation),
 		EnergyCost: 10,
@@ -40,18 +29,16 @@ func RandomBrain() *Brain {
 		OuterAnalyzersCount: rand.Intn(10) + 1,
 		ManipulationSystem:  randomManipulationSystem(),
 	}
+	b.OuterReceptor = randomOuterReceptor(b.OuterAnalyzersCount)
 	b.OuterAnalyzerNet = randomOuterAnalyzerNet(b.OuterAnalyzersCount, len(b.ManipulationSystem))
 	return b
 }
 
-func (b *Brain) randomOuterSignal() map[uint8][]uint8 {
-	res := make(map[uint8][]uint8)
-	for i := 0; i < 30; i++ {
-		analyser := rand.Intn(b.OuterAnalyzersCount)
-		if _, ok := res[uint8(analyser)]; !ok {
-			res[uint8(analyser)] = make([]uint8, 4)
-		}
-		res[uint8(analyser)][rand.Intn(4)] += 1
+func (b *Brain) randomOuterSignal() []uint8 {
+	size := len(b.OuterReceptor)
+	res := make([]uint8, size)
+	for i := 0; i < size; i++ {
+		res[i] = uint8(rand.Intn(4))
 	}
 	return res
 }

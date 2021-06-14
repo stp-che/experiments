@@ -11,7 +11,7 @@ type OuterAnalyzerLink struct {
 
 type OuterAnalyzerNet []*OuterAnalyzerLink
 
-func (a OuterAnalyzerNet) Activation(signalTable map[uint8][]uint8) map[uint8]int16 {
+func (a OuterAnalyzerNet) Activation(signalTable CollectedOuterSignal) map[uint8]int16 {
 	res := make(map[uint8]int16)
 	for _, link := range a {
 		if sig, present := signalTable[link.Analyzer]; present {
