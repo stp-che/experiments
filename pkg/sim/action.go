@@ -59,6 +59,7 @@ func (a *Action) hasEffect(ctx map[int]int) bool {
 	}
 	switch a.Type {
 	case behaviour.AMove:
+		// Move action can have effect if only one bot is going to move to the target position
 		return ctx[a.targetPos] == 1
 	default:
 		return true
@@ -103,14 +104,3 @@ func (a *Action) EnergyCostMultiplier() int {
 	}
 	return 1
 }
-
-// func randomAction() *Action {
-// 	return &Action{
-// 		Type:      randomActionType(),
-// 		Direction: core.RandomDirection(),
-// 	}
-// }
-
-// func randomActionType() behaviour.ActionType {
-// 	return actionTypesByPriority[rand.Intn(len(actionTypesByPriority))]
-// }

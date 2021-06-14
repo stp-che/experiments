@@ -10,7 +10,7 @@ import (
 type RegionContent byte
 
 const (
-	RCNone RegionContent = iota
+	RCNone RegionContent = iota + 1
 	RCWall
 	RCFood
 	RCBot
@@ -59,7 +59,7 @@ func (w *World) Init() {
 	n := w.Cols * w.Rows
 	w.Regions = make([]*Region, n)
 	for i := 0; i < n; i++ {
-		w.Regions[i] = &Region{}
+		w.Regions[i] = &Region{Content: RCNone}
 	}
 	buildWalls(w, n/30)
 }
@@ -111,24 +111,35 @@ func randomWalk(w *World, keepingDirection int, step func(*Region) bool) {
 	}
 }
 
+func (w *World) Region(pos int) *Region {
+	if pos < 0 || pos > len(w.Regions) {
+		return nil
+	}
+	return w.Regions[pos]
+}
+
 func (w *World) RandomPos() int {
 	return rand.Intn(w.Cols * w.Rows)
 }
 
 // Returns position of region next to the given one in given direction
 // Returns -1 if it is out of world bounds
-func (w *World) NextPos(pos int, d core.Direction) (res int) {
+func (w *World) NextPos(pos int, d core.Direction) int {
 	dx, dy := d.DeltaXY()
-	x, y := w.XYPos(pos)
-	if x+dx < 0 || x+dx >= w.Cols || y+dy < 0 || y+dy >= w.Rows {
-		return -1
-	}
-	return pos + dy*w.Cols + dx
+	return w.ShiftXY(pos, dx, dy)
 }
 
 func (w *World) XYPos(n int) (int, int) {
 	// TODO: check bounds
 	return n % w.Cols, n / w.Cols
+}
+
+func (w *World) ShiftXY(pos, dx, dy int) int {
+	x, y := w.XYPos(pos)
+	if x+dx < 0 || x+dx >= w.Cols || y+dy < 0 || y+dy >= w.Rows {
+		return -1
+	}
+	return pos + dy*w.Cols + dx
 }
 
 func (w *World) RandomEmptyPositions(n int) []int {

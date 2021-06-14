@@ -1,11 +1,13 @@
 package behaviour
 
 import (
+	"math"
 	"math/rand"
 )
 
 type IBrain interface {
 	Process(OuterInput, InnerInput) *ProcessingResult
+	VisionRange() int
 }
 
 type Brain struct {
@@ -13,15 +15,27 @@ type Brain struct {
 	OuterAnalyzersCount int
 	OuterAnalyzerNet    OuterAnalyzerNet
 	ManipulationSystem  ManipulationSystem
+	visionRange         int
 }
 
 func (b *Brain) Process(o OuterInput, i InnerInput) *ProcessingResult {
-	collectedSignal := b.OuterReceptor.CollectSignal(b.randomOuterSignal())
+	collectedSignal := b.OuterReceptor.CollectSignal(o.Signal)
 	activation := b.OuterAnalyzerNet.Activation(collectedSignal)
 	return &ProcessingResult{
 		Decision:   b.ManipulationSystem.ComputeIntention(activation),
 		EnergyCost: 10,
 	}
+}
+
+func (b *Brain) VisionRange() int {
+	if b.OuterReceptor == nil {
+		return 0
+	}
+	if b.visionRange > 0 {
+		return b.visionRange
+	}
+	b.visionRange = (int(math.Round(math.Sqrt(float64(4*len(b.OuterReceptor)+1)))) - 1) / 2
+	return b.visionRange
 }
 
 func RandomBrain() *Brain {
@@ -32,13 +46,4 @@ func RandomBrain() *Brain {
 	b.OuterReceptor = randomOuterReceptor(b.OuterAnalyzersCount)
 	b.OuterAnalyzerNet = randomOuterAnalyzerNet(b.OuterAnalyzersCount, len(b.ManipulationSystem))
 	return b
-}
-
-func (b *Brain) randomOuterSignal() []uint8 {
-	size := len(b.OuterReceptor)
-	res := make([]uint8, size)
-	for i := 0; i < size; i++ {
-		res[i] = uint8(rand.Intn(4))
-	}
-	return res
 }

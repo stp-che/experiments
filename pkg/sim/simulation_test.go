@@ -7,8 +7,9 @@ import (
 )
 
 type testBotBrain struct {
-	intentions []*behaviour.Intention
-	i          int
+	intentions  []*behaviour.Intention
+	visionRange int
+	i           int
 }
 
 func (b *testBotBrain) SetActions(actions []*behaviour.Intention) {
@@ -20,6 +21,14 @@ func (b *testBotBrain) Process(_ behaviour.OuterInput, _ behaviour.InnerInput) *
 	i := b.intentions[b.i%len(b.intentions)]
 	b.i++
 	return &behaviour.ProcessingResult{Decision: i}
+}
+
+func (b *testBotBrain) VisionRange() int {
+	return b.visionRange
+}
+
+func (b *testBotBrain) SetVisionRange(r int) {
+	b.visionRange = r
 }
 
 type testSimConfig struct {
