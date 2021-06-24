@@ -18,3 +18,9 @@ type ProcessingResult struct {
 // where N is an index of analyzer cell and Ai is a number of signal i received by the analyzer cell
 // TODO: think about converting to map[uint8]map[uint8]uint8
 type CollectedOuterSignal map[uint8][]uint8
+
+// Activation values for manipulation system in form {direction: {i: pow}}
+// where direction - from where outer signal was collected
+// i - number of manipulator,
+// pow - power in which manipulator i is activated
+type ManipulationSystemActivation map[core.Direction]map[uint8]int16

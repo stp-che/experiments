@@ -60,8 +60,13 @@ func (b *Bot) IsAlive() bool {
 	return b.Energy > 0
 }
 
-func (b *Bot) LookAround() behaviour.OuterInput {
-	return b.look(core.Up)
+func (b *Bot) LookAround() []behaviour.OuterInput {
+	return []behaviour.OuterInput{
+		b.look(core.Up),
+		b.look(core.Right),
+		b.look(core.Down),
+		b.look(core.Left),
+	}
 }
 
 func (b *Bot) toSignal(c RegionContent) uint8 {
@@ -91,6 +96,12 @@ func (b *Bot) posNear(d core.Direction, i int) int {
 	switch d {
 	case core.Up:
 		return b.world.ShiftXY(b.Pos, i%(r+1)-r, i/(r+1)-r)
+	case core.Right:
+		return b.world.ShiftXY(b.Pos, r-i/(r+1), i%(r+1)-r)
+	case core.Down:
+		return b.world.ShiftXY(b.Pos, r-i%(r+1), r-i/(r+1))
+	case core.Left:
+		return b.world.ShiftXY(b.Pos, i/(r+1)-r, r-i%(r+1))
 	default:
 		return -1
 	}

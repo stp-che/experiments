@@ -22,15 +22,19 @@ func TestComputeIntention(t *testing.T) {
 	}
 
 	cases := []struct {
-		Activation map[uint8]int16
+		Activation ManipulationSystemActivation
 		ActionType ActionType
 		Direction  core.Direction
 	}{
-		{map[uint8]int16{0: 1, 1: 1, 2: 1}, AMove, core.Up},
-		{map[uint8]int16{0: 1, 1: 6, 2: 6}, AMove, core.UpLeft},
-		{map[uint8]int16{0: 1, 1: 2, 2: 3}, AMove, core.Up},
-		{map[uint8]int16{0: 1, 1: 1, 2: 4}, AEat, core.DownLeft},
-		{map[uint8]int16{0: -5, 1: 1, 2: 2}, AMove, core.Right},
+		{ManipulationSystemActivation{core.Up: {0: 1, 1: 1, 2: 1}}, AMove, core.Up},
+		{ManipulationSystemActivation{core.Up: {0: 1, 1: 6, 2: 6}}, AMove, core.UpLeft},
+		{ManipulationSystemActivation{core.Up: {0: 1, 1: 2, 2: 3}}, AMove, core.Up},
+		{ManipulationSystemActivation{core.Up: {0: 1, 1: 1, 2: 4}}, AEat, core.DownLeft},
+		{ManipulationSystemActivation{core.Up: {0: -5, 1: 1, 2: 2}}, AMove, core.Right},
+		{ManipulationSystemActivation{core.Up: {1: 1}}, AMove, core.UpLeft},
+		{ManipulationSystemActivation{core.Right: {1: 1}}, AMove, core.UpRight},
+		{ManipulationSystemActivation{core.Down: {1: 1}}, AMove, core.DownRight},
+		{ManipulationSystemActivation{core.Left: {1: 1}}, AMove, core.DownLeft},
 	}
 
 	for i, c := range cases {
@@ -40,7 +44,7 @@ func TestComputeIntention(t *testing.T) {
 		}
 	}
 
-	a := ms.ComputeIntention(map[uint8]int16{1: -1, 2: -1})
+	a := ms.ComputeIntention(ManipulationSystemActivation{core.Up: {1: -1, 2: -1}})
 	if a != nil {
 		t.Errorf("Expected action nil, got Action{%v, %v}", a.ActionType, a.Direction)
 	}

@@ -25,18 +25,46 @@ func TestLookAround(t *testing.T) {
 	brains[0].SetVisionRange(1)
 	brains[1].SetVisionRange(2)
 
-	expectedRes := behaviour.OuterInput{
-		Direction: core.Up,
-		Signal:    []uint8{0, 0},
+	expectedRes := []behaviour.OuterInput{
+		{
+			Direction: core.Up,
+			Signal:    []uint8{0, 0},
+		},
+		{
+			Direction: core.Right,
+			Signal:    []uint8{0, uint8(RCNone)},
+		},
+		{
+			Direction: core.Down,
+			Signal:    []uint8{uint8(RCFood), uint8(RCNone)},
+		},
+		{
+			Direction: core.Left,
+			Signal:    []uint8{0, 0},
+		},
 	}
 	res := sim.Bots[0].LookAround()
 	if !reflect.DeepEqual(res, expectedRes) {
 		t.Errorf("expect result to eq %v, got %v", expectedRes, res)
 	}
 
-	expectedRes = behaviour.OuterInput{
-		Direction: core.Up,
-		Signal:    []uint8{uint8(RCBot), uint8(RCNone), uint8(RCWall), uint8(RCNone), uint8(RCFood), uint8(RCWall)},
+	expectedRes = []behaviour.OuterInput{
+		{
+			Direction: core.Up,
+			Signal:    []uint8{uint8(RCBot), uint8(RCNone), uint8(RCWall), uint8(RCNone), uint8(RCFood), uint8(RCWall)},
+		},
+		{
+			Direction: core.Right,
+			Signal:    []uint8{uint8(RCNone), uint8(RCNone), uint8(RCNone), uint8(RCNone), uint8(RCNone), uint8(RCNone)},
+		},
+		{
+			Direction: core.Down,
+			Signal:    []uint8{uint8(RCNone), uint8(RCNone), uint8(RCNone), uint8(RCNone), uint8(RCFood), uint8(RCWall)},
+		},
+		{
+			Direction: core.Left,
+			Signal:    []uint8{uint8(RCNone), uint8(RCNone), uint8(RCNone), uint8(RCNone), uint8(RCNone), uint8(RCNone)},
+		},
 	}
 	res = sim.Bots[1].LookAround()
 	if !reflect.DeepEqual(res, expectedRes) {

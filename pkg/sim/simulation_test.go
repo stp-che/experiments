@@ -17,7 +17,7 @@ func (b *testBotBrain) SetActions(actions []*behaviour.Intention) {
 	b.i = 0
 }
 
-func (b *testBotBrain) Process(_ behaviour.OuterInput, _ behaviour.InnerInput) *behaviour.ProcessingResult {
+func (b *testBotBrain) Process(_ []behaviour.OuterInput, _ behaviour.InnerInput) *behaviour.ProcessingResult {
 	i := b.intentions[b.i%len(b.intentions)]
 	b.i++
 	return &behaviour.ProcessingResult{Decision: i}

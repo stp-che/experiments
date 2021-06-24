@@ -12,18 +12,20 @@ type Manipulator struct {
 
 type ManipulationSystem []*Manipulator
 
-func (s ManipulationSystem) ComputeIntention(activation map[uint8]int16) *Intention {
+func (s ManipulationSystem) ComputeIntention(activations ManipulationSystemActivation) *Intention {
 	decisionTable := make(map[ActionType]*[8]int16)
-	// TODO: check genes and activation have the same len
-	for i, power := range activation {
-		mn := s[i]
-		decisionRow, ok := decisionTable[mn.ActionType]
-		if !ok {
-			decisionRow = &[8]int16{}
-			decisionTable[mn.ActionType] = decisionRow
-		}
-		for j, v := range mn.DirValues {
-			decisionRow[j] += int16(v) * power
+	for direction, activation := range activations {
+		dirCorretion := int(direction - core.Up)
+		for i, power := range activation {
+			mn := s[i]
+			decisionRow, ok := decisionTable[mn.ActionType]
+			if !ok {
+				decisionRow = &[8]int16{}
+				decisionTable[mn.ActionType] = decisionRow
+			}
+			for j, v := range mn.DirValues {
+				decisionRow[(j+dirCorretion)%8] += int16(v) * power
+			}
 		}
 	}
 	var max int16 = 0

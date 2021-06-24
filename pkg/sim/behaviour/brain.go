@@ -6,7 +6,7 @@ import (
 )
 
 type IBrain interface {
-	Process(OuterInput, InnerInput) *ProcessingResult
+	Process([]OuterInput, InnerInput) *ProcessingResult
 	VisionRange() int
 }
 
@@ -18,9 +18,12 @@ type Brain struct {
 	visionRange         int
 }
 
-func (b *Brain) Process(o OuterInput, i InnerInput) *ProcessingResult {
-	collectedSignal := b.OuterReceptor.CollectSignal(o.Signal)
-	activation := b.OuterAnalyzerNet.Activation(collectedSignal)
+func (b *Brain) Process(o []OuterInput, i InnerInput) *ProcessingResult {
+	activation := ManipulationSystemActivation{}
+	for _, inp := range o {
+		collectedSignal := b.OuterReceptor.CollectSignal(inp.Signal)
+		activation[inp.Direction] = b.OuterAnalyzerNet.Activation(collectedSignal)
+	}
 	return &ProcessingResult{
 		Decision:   b.ManipulationSystem.ComputeIntention(activation),
 		EnergyCost: 10,
