@@ -51,7 +51,7 @@ func (b *Bot) StepDone() {
 
 func (b *Bot) processResult() *behaviour.ProcessingResult {
 	if b._processResult == nil {
-		b._processResult = b.Brain.Process(b.LookAround(), behaviour.InnerInput{})
+		b._processResult = b.Brain.Process(b.LookAround(), b.SelfCheck())
 	}
 	return b._processResult
 }
@@ -105,4 +105,8 @@ func (b *Bot) posNear(d core.Direction, i int) int {
 	default:
 		return -1
 	}
+}
+
+func (b *Bot) SelfCheck() behaviour.InnerInput {
+	return behaviour.InnerInput{b.Energy / 256}
 }

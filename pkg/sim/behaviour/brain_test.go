@@ -10,7 +10,11 @@ func testBrain() *Brain {
 	return &Brain{
 		OuterReceptor:       []uint8{0, 1},
 		OuterAnalyzersCount: 2,
-		OuterAnalyzerNet: []*OuterAnalyzerLink{
+		HealthAnalyzerNet: HealthAnalyzerNet{
+			{0, 10, 4, 255},
+			{0, 10, 5, 255},
+		},
+		OuterAnalyzerNet: OuterAnalyzerNet{
 			{0, 0, 0, 1},
 			{1, 0, 1, 1},
 			{0, 1, 0, -100},
@@ -62,33 +66,38 @@ func TestProcess(t *testing.T) {
 	cases := []processTestCase{
 		{
 			OuterInput: [][]uint8{{1, 1}, {1, 1}, {0, 1}, {1, 1}},
-			InnerInput: InnerInput{},
+			InnerInput: InnerInput{100},
 			Intention:  &Intention{AMove, core.DownRight},
 		},
 		{
 			OuterInput: [][]uint8{{2, 0}, {0, 0}, {0, 0}, {0, 0}},
-			InnerInput: InnerInput{},
+			InnerInput: InnerInput{100},
 			Intention:  &Intention{AEat, core.UpLeft},
 		},
 		{
 			OuterInput: [][]uint8{{3, 3}, {0, 0}, {0, 0}, {0, 3}},
-			InnerInput: InnerInput{},
+			InnerInput: InnerInput{100},
 			Intention:  &Intention{AMove, core.DownRight},
 		},
 		{
 			OuterInput: [][]uint8{{3, 0}, {3, 0}, {0, 0}, {0, 0}},
-			InnerInput: InnerInput{},
+			InnerInput: InnerInput{100},
 			Intention:  &Intention{AMove, core.Down},
 		},
 		{
 			OuterInput: [][]uint8{{0, 1}, {1, 0}, {0, 0}, {3, 0}},
-			InnerInput: InnerInput{},
+			InnerInput: InnerInput{100},
 			Intention:  &Intention{AMove, core.Right},
 		},
 		{
 			OuterInput: [][]uint8{{2, 3}, {0, 0}, {0, 0}, {0, 0}},
-			InnerInput: InnerInput{},
+			InnerInput: InnerInput{100},
 			Intention:  &Intention{AMove, core.Down},
+		},
+		{
+			OuterInput: [][]uint8{{2, 3}, {0, 0}, {0, 0}, {0, 0}},
+			InnerInput: InnerInput{9},
+			Intention:  &Intention{AEat, core.UpLeft},
 		},
 	}
 

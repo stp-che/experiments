@@ -12,6 +12,7 @@ type IBrain interface {
 
 type Brain struct {
 	OuterReceptor       OuterReceptor
+	HealthAnalyzerNet   HealthAnalyzerNet
 	OuterAnalyzersCount int
 	OuterAnalyzerNet    OuterAnalyzerNet
 	ManipulationSystem  ManipulationSystem
@@ -20,9 +21,10 @@ type Brain struct {
 
 func (b *Brain) Process(o []OuterInput, i InnerInput) *ProcessingResult {
 	activation := ManipulationSystemActivation{}
+	correction := b.HealthAnalyzerNet.Correction(i[0])
 	for _, inp := range o {
 		collectedSignal := b.OuterReceptor.CollectSignal(inp.Signal)
-		activation[inp.Direction] = b.OuterAnalyzerNet.Activation(collectedSignal)
+		activation[inp.Direction] = b.OuterAnalyzerNet.Activation(collectedSignal, correction)
 	}
 	return &ProcessingResult{
 		Decision:   b.ManipulationSystem.ComputeIntention(activation),
@@ -48,5 +50,6 @@ func RandomBrain() *Brain {
 	}
 	b.OuterReceptor = randomOuterReceptor(b.OuterAnalyzersCount)
 	b.OuterAnalyzerNet = randomOuterAnalyzerNet(b.OuterAnalyzersCount, len(b.ManipulationSystem))
+	b.HealthAnalyzerNet = randomHealthAnalyzerNet(len(b.OuterAnalyzerNet))
 	return b
 }

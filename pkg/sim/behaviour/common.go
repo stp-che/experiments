@@ -19,6 +19,8 @@ type ProcessingResult struct {
 // TODO: think about converting to map[uint8]map[uint8]uint8
 type CollectedOuterSignal map[uint8][]uint8
 
+type OuterAnalyzerNetCorrection map[uint8]float32
+
 // Activation values for manipulation system in form {direction: {i: pow}}
 // where direction - from where outer signal was collected
 // i - number of manipulator,
