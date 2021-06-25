@@ -28,7 +28,7 @@ func (b *Brain) Process(o []OuterInput, i InnerInput) *ProcessingResult {
 	}
 	return &ProcessingResult{
 		Decision:   b.ManipulationSystem.ComputeIntention(activation),
-		EnergyCost: 10,
+		EnergyCost: b.energyCost(activation),
 	}
 }
 
@@ -41,6 +41,24 @@ func (b *Brain) VisionRange() int {
 	}
 	b.visionRange = (int(math.Round(math.Sqrt(float64(4*len(b.OuterReceptor)+1)))) - 1) / 2
 	return b.visionRange
+}
+
+func (b *Brain) energyCost(activations ManipulationSystemActivation) int {
+	baseCost := len(b.OuterReceptor) +
+		len(b.HealthAnalyzerNet) +
+		len(b.OuterAnalyzerNet) +
+		len(b.ManipulationSystem) +
+		b.OuterAnalyzersCount + 1 // number of outer analyzers and one inner analyzer
+	activityCost := 0
+	for _, activation := range activations {
+		for _, pow := range activation {
+			if pow < 0 {
+				pow = -pow
+			}
+			activityCost += int(pow)
+		}
+	}
+	return baseCost + (activityCost-1)/32 + 1
 }
 
 func RandomBrain() *Brain {
