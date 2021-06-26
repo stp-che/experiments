@@ -40,3 +40,11 @@ func RandomIntention() *Intention {
 func randomActionType() ActionType {
 	return ActionType(rand.Intn(ActionTypesCount) + 1)
 }
+
+func actionType(n uint8) ActionType {
+	a := n % ActionTypesCount
+	if a == 0 {
+		a = ActionTypesCount
+	}
+	return ActionType(a)
+}

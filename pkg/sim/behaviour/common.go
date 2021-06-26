@@ -1,6 +1,8 @@
 package behaviour
 
-import "experiments/pkg/sim/core"
+import (
+	"experiments/pkg/sim/core"
+)
 
 type OuterInput struct {
 	Direction core.Direction

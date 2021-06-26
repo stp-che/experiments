@@ -7,10 +7,11 @@ import (
 
 func TestCorrection(t *testing.T) {
 	testNet := HealthAnalyzerNet{
-		{MinHealth: 0, MaxHealth: 50, OuterAnalyzerLink: 0, Correction: 50},
-		{MinHealth: 30, MaxHealth: 70, OuterAnalyzerLink: 0, Correction: 200},
-		{MinHealth: 40, MaxHealth: 150, OuterAnalyzerLink: 1, Correction: 100},
-		{MinHealth: 200, MaxHealth: 255, OuterAnalyzerLink: 2, Correction: 1},
+		// MinHealth, MaxHealth, OuterAnalyzerLink, Correction
+		0, 50, 0, 50,
+		30, 70, 0, 200,
+		40, 150, 1, 100,
+		200, 255, 2, 1,
 	}
 
 	cases := []struct {

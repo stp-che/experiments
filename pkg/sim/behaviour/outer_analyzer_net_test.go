@@ -7,10 +7,11 @@ import (
 
 func TestActivation(t *testing.T) {
 	testNet := OuterAnalyzerNet{
-		{Analyzer: 0, Signal: 0, Manipulator: 5, Power: 10},
-		{Analyzer: 0, Signal: 0, Manipulator: 8, Power: 100},
-		{Analyzer: 0, Signal: 1, Manipulator: 5, Power: -5},
-		{Analyzer: 1, Signal: 0, Manipulator: 8, Power: 50},
+		// Analyzer, Signal, Manipulator, Power
+		0, 0, 5, 138,
+		0, 0, 8, 228,
+		0, 1, 5, 123,
+		1, 0, 8, 178,
 	}
 
 	cases := []struct {
