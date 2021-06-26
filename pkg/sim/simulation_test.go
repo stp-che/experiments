@@ -3,6 +3,8 @@ package sim
 import (
 	"experiments/pkg/sim/behaviour"
 	"experiments/pkg/sim/core"
+	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -306,4 +308,53 @@ func TestStep(t *testing.T) {
 	testMoveActions(t)
 	testEatActions(t)
 	testNilActions(t)
+}
+
+func TestBotsChart(t *testing.T) {
+	s := Simulation{
+		Bots: []*Bot{
+			{Movements: 1, Age: 10, Energy: 0},
+			{Movements: 1, Age: 100, Energy: 50},
+			{Movements: 1, Age: 10, Energy: -5},
+			{Movements: 1, Age: 100, Energy: 0},
+			{Movements: 2, Age: 60, Energy: 0},
+			{Movements: 100, Age: 50, Energy: 0},
+			{Movements: 50, Age: 99, Energy: 0},
+			{Movements: 2, Age: 99, Energy: 1},
+		},
+	}
+
+	expectedChart := []*Bot{
+		{Movements: 2, Age: 99, Energy: 1},
+		{Movements: 50, Age: 99, Energy: 0},
+		{Movements: 2, Age: 60, Energy: 0},
+		{Movements: 100, Age: 50, Energy: 0},
+		{Movements: 1, Age: 100, Energy: 50},
+		{Movements: 1, Age: 100, Energy: 0},
+		{Movements: 1, Age: 10, Energy: 0},
+		{Movements: 1, Age: 10, Energy: -5},
+	}
+
+	actualChart := s.BotsChart()
+
+	if !reflect.DeepEqual(expectedChart, actualChart) {
+		t.Errorf("Expected chart to eq %s, got %s", inspect(expectedChart), inspect(actualChart))
+	}
+}
+
+func inspect(val interface{}) string {
+	switch v := reflect.ValueOf(val); v.Kind() {
+	case reflect.Array, reflect.Slice:
+		s := "["
+		for i := 0; i < v.Len(); i++ {
+			if i > 0 {
+				s += ", "
+			}
+			s += fmt.Sprintf("%v", v.Index(i))
+		}
+		s += "]"
+		return s
+	default:
+		return fmt.Sprintf("%v", val)
+	}
 }

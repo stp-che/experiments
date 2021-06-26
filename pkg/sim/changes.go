@@ -21,6 +21,7 @@ type putBot struct {
 
 func (e *putBot) Apply() {
 	e.Bot.Pos = e.Pos
+	e.Bot.Movements++
 	e.Reg.Bot = e.Bot
 	e.Reg.Content = RCBot
 }

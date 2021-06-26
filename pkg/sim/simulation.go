@@ -3,6 +3,7 @@ package sim
 import (
 	"errors"
 	"experiments/pkg/sim/behaviour"
+	"sort"
 )
 
 type BotsGroup struct {
@@ -182,6 +183,25 @@ func (s *Simulation) generateFood() {
 
 func (s *Simulation) BotsGroups() []BotsGroup {
 	return s.groups
+}
+
+func (s *Simulation) BotsChart() []*Bot {
+	bots := make([]*Bot, len(s.Bots))
+	copy(bots, s.Bots)
+	sort.Slice(bots, func(i, j int) bool {
+		b1, b2 := bots[i], bots[j]
+		if b1.Movements < 2 && b2.Movements >= 2 {
+			return false
+		}
+		if b1.Movements >= 2 && b2.Movements < 2 {
+			return true
+		}
+		if b1.Age == b2.Age {
+			return b1.Energy > b2.Energy
+		}
+		return b1.Age > b2.Age
+	})
+	return bots[0:8]
 }
 
 type Config struct {

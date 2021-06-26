@@ -5,7 +5,7 @@ import (
 	"experiments/pkg/sim/core"
 )
 
-const DEFAULT_ENERGY = 300
+const DEFAULT_ENERGY = 500
 
 type Bot struct {
 	world          *World
@@ -13,6 +13,7 @@ type Bot struct {
 	Energy         int
 	Age            int
 	Pos            int
+	Movements      int
 	nextAction     *Action
 	_processResult *behaviour.ProcessingResult
 }
@@ -41,7 +42,7 @@ func (b *Bot) StepDone() {
 
 	energyLost := b.processResult().EnergyCost
 	if b.nextAction != nil {
-		energyLost *= b.nextAction.EnergyCostMultiplier()
+		energyLost = int(float32(energyLost) * b.nextAction.EnergyCostMultiplier())
 	}
 	b.Energy -= energyLost
 	b.nextAction = nil

@@ -10,8 +10,8 @@ var actionTypesByPriority = []behaviour.ActionType{
 	behaviour.AMove,
 }
 
-var energyCostMultipliers = map[behaviour.ActionType]int{
-	behaviour.AMove: 2,
+var energyCostMultipliers = map[behaviour.ActionType]float32{
+	behaviour.AMove: 1.2,
 }
 
 type Action struct {
@@ -89,7 +89,7 @@ func (a *Action) Effect(ctx map[int]int) []change {
 			&feedBot{
 				Bot: a.bot,
 				// food is shared equally among all bots eating from the same region
-				Energy: 200 / ctx[a.targetPos],
+				Energy: 1000 / ctx[a.targetPos],
 			},
 			&clearReg{a.TargetReg()},
 		}
@@ -98,7 +98,7 @@ func (a *Action) Effect(ctx map[int]int) []change {
 	}
 }
 
-func (a *Action) EnergyCostMultiplier() int {
+func (a *Action) EnergyCostMultiplier() float32 {
 	if m, set := energyCostMultipliers[a.Type]; set {
 		return m
 	}
