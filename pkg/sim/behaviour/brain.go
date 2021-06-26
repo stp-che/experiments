@@ -58,7 +58,7 @@ func (b *Brain) energyCost(activations ManipulationSystemActivation) int {
 }
 
 func (b *Brain) Mutate(n int) *Brain {
-	return nil
+	return randomMutation(3, len(b.Content)).Apply(b)
 }
 
 func (b *Brain) NormalizeContent() {

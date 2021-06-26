@@ -59,15 +59,3 @@ func (a OuterAnalyzerNet) randomize(bStruct BrainStructure) {
 		a[j+3] = uint8(rand.Intn(256))
 	}
 }
-
-// func randomOuterAnalyzerNet(analyzersCount, manipulatorsCount int) OuterAnalyzerNet {
-// 	count := rand.Intn(analyzersCount)*rand.Intn(manipulatorsCount) + 1
-// 	res := make(OuterAnalyzerNet, count*outerAnalyzerLinkSize)
-// 	for i := 0; i < len(res); i += outerAnalyzerLinkSize {
-// 		res[i] = uint8(rand.Intn(analyzersCount))
-// 		res[i+1] = uint8(rand.Intn(4))
-// 		res[i+2] = uint8(rand.Intn(manipulatorsCount))
-// 		res[i+3] = uint8(rand.Intn(256))
-// 	}
-// 	return res
-// }
