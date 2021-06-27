@@ -1,6 +1,9 @@
 package sim
 
 type Config struct {
+	// Number of experiments
+	ExperimentsNumber int
+
 	// Number of regions horizonally
 	WorldWidth int
 	// Number of regions vertically

@@ -1,28 +1,31 @@
 package sim
 
 import (
+	"errors"
 	"experiments/pkg/sim/behaviour"
 	"sort"
-	"sync"
 )
 
 type BotsGroup struct {
-	Brain *behaviour.Brain
+	Brain behaviour.IBrain
 	Bots  []*Bot
 }
 
 type Experiment struct {
 	finished     bool
 	cfg          Config
-	mutex        *sync.Mutex
 	Number       int
 	World        *World
 	Bots         []*Bot
-	Brains       []*behaviour.Brain
+	Brains       []behaviour.IBrain
 	Steps        int
 	foodNextStep int
 	groups       []BotsGroup
 }
+
+var (
+	NoPlaceForBots = errors.New("No place for bots in the world")
+)
 
 func (e *Experiment) init() error {
 	e.createWorld()
@@ -36,7 +39,9 @@ func (e *Experiment) createWorld() {
 }
 
 func (e *Experiment) createGenomes() {
-	e.Brains = make([]*behaviour.Brain, e.cfg.BrainsNumber)
+	if len(e.Brains) < e.cfg.BrainsNumber {
+		e.Brains = make([]behaviour.IBrain, e.cfg.BrainsNumber)
+	}
 	e.groups = make([]BotsGroup, e.cfg.BrainsNumber)
 	for i := 0; i < e.cfg.BrainsNumber; i++ {
 		e.Brains[i] = behaviour.RandomBrain()
@@ -72,8 +77,6 @@ func (e *Experiment) BotsGroups() []BotsGroup {
 }
 
 func (e *Experiment) Step() {
-	e.mutex.Lock()
-	defer e.mutex.Unlock()
 	if !e.finished {
 		if e.Steps == e.foodNextStep {
 			e.generateFood()
@@ -178,5 +181,14 @@ func (e *Experiment) BotsChart() []*Bot {
 		}
 		return b1.Age > b2.Age
 	})
-	return bots[0:8]
+	return bots
+}
+
+func (e *Experiment) BrainsChart() []behaviour.IBrain {
+	brains := make([]behaviour.IBrain, e.cfg.BrainsNumber)
+	bots := e.BotsChart()
+	for i := 0; i < e.cfg.BrainsNumber; i++ {
+		brains[i] = bots[i].Brain
+	}
+	return brains
 }

@@ -18,7 +18,6 @@ type Simulation struct {
 
 var (
 	AlreadyRunningOrFinished = errors.New("Simulation is already running or finished")
-	NoPlaceForBots           = errors.New("No place for bots in the world")
 )
 
 func (s *Simulation) Run() (chan interface{}, error) {
@@ -32,9 +31,9 @@ func (s *Simulation) Run() (chan interface{}, error) {
 
 	updates := make(chan interface{})
 	go func() {
-		for !s.Experiment.finished {
+		for !s.finished {
 			<-s.ticker.C
-			s.Experiment.Step()
+			s.Step()
 			updates <- nil
 		}
 		s.running = false
@@ -57,13 +56,17 @@ func NewSimulation(cfg Config) (*Simulation, error) {
 
 func (s *Simulation) init() error {
 	s.tickerInterval = time.Millisecond * 128
-	ex, err := s.createExperiment()
+	ex, err := s.nextExperiment()
 	s.Experiment = ex
 	return err
 }
 
-func (s *Simulation) createExperiment() (*Experiment, error) {
-	ex := &Experiment{cfg: s.cfg, mutex: s.mutex}
+func (s *Simulation) nextExperiment() (*Experiment, error) {
+	ex := &Experiment{cfg: s.cfg, Number: 1}
+	if s.Experiment != nil {
+		ex.Number = s.Experiment.Number + 1
+		ex.Brains = s.Experiment.BrainsChart()
+	}
 	err := ex.init()
 	if err != nil {
 		return nil, err
@@ -75,4 +78,24 @@ func (s *Simulation) Sync(f func()) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	f()
+}
+
+func (s *Simulation) Step() {
+	if s.finished {
+		return
+	}
+
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	if !s.Experiment.finished {
+		s.Experiment.Step()
+	} else {
+		ex, err := s.nextExperiment()
+		if err != nil {
+			s.finished = true
+			return
+		}
+		s.Experiment = ex
+	}
+	s.finished = s.Experiment.finished && s.Experiment.Number >= s.cfg.ExperimentsNumber
 }

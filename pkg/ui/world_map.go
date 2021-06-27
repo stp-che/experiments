@@ -14,15 +14,13 @@ type WorldMap struct {
 	bounds          pixel.Rect
 }
 
-func (b *WorldMap) FitInto(bounds pixel.Rect) {
+func (b *WorldMap) fitInto(bounds pixel.Rect) {
 	b.regionSize = int(bounds.W()) / b.World.Cols
 	if b.regionSize*b.World.Rows > int(bounds.H()) {
 		b.regionSize = int(bounds.H()) / b.World.Rows
 	}
 	b.bounds = bounds.Resized(topLeft(bounds), pixel.V(float64(b.regionSize*b.World.Cols), float64(b.regionSize*b.World.Rows)))
 	b.regionSizeFloat = float64(b.regionSize)
-	// fmt.Printf("%v\n", bounds)
-	// fmt.Printf("%v\n", b.bounds)
 }
 
 func (b *WorldMap) CellSize() float64 {
@@ -82,9 +80,9 @@ func (b *WorldMap) renderRegion(pos int, reg *sim.Region, imd *imdraw.IMDraw) {
 }
 
 func newWorldMap(world *sim.World, bounds pixel.Rect) *WorldMap {
-	b := &WorldMap{
+	m := &WorldMap{
 		World: world,
 	}
-	b.FitInto(bounds)
-	return b
+	m.fitInto(bounds)
+	return m
 }

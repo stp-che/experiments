@@ -9,10 +9,11 @@ import (
 )
 
 type Scene struct {
-	WorldMap *WorldMap
-	BotsInfo *BotsComponent
-	Sim      *sim.Simulation
-	imd      *imdraw.IMDraw
+	WorldMap         *WorldMap
+	BotsInfo         *BotsComponent
+	Sim              *sim.Simulation
+	imd              *imdraw.IMDraw
+	experimentNumber int
 }
 
 func (s *Scene) Draw(win *pixelgl.Window) {
@@ -33,9 +34,10 @@ func newScene(sim *sim.Simulation, bounds pixel.Rect) *Scene {
 		TopLeft: topLeft(bounds).Add(pixel.V(wMap.Bounds().Max.X+50, -scenePadding)),
 	}
 	s := &Scene{
-		WorldMap: wMap,
-		BotsInfo: botsInfo.Init(sim.Experiment.BotsGroups()),
-		Sim:      sim,
+		WorldMap:         wMap,
+		BotsInfo:         botsInfo.Init(sim.Experiment.BotsGroups()),
+		Sim:              sim,
+		experimentNumber: sim.Experiment.Number,
 	}
 	return s
 }

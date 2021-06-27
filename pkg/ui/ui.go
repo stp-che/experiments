@@ -48,7 +48,7 @@ func (ui *Ui) Closed() bool {
 }
 
 func (ui *Ui) drawScene() {
-	if ui.scene == nil {
+	if ui.scene == nil || ui.scene.experimentNumber != ui.Sim.Experiment.Number {
 		ui.scene = newScene(ui.Sim, ui.Win.Bounds())
 	}
 	ui.scene.Draw(ui.Win)

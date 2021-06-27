@@ -5,7 +5,6 @@ import (
 	"experiments/pkg/sim/core"
 	"fmt"
 	"reflect"
-	"sync"
 	"testing"
 )
 
@@ -81,7 +80,6 @@ func prepare(c testSimConfig) (*Experiment, []*testBotBrain) {
 	ex := &Experiment{
 		World: world,
 		Bots:  bots,
-		mutex: &sync.Mutex{},
 	}
 
 	return ex, brains
