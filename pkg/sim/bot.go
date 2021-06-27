@@ -9,7 +9,7 @@ const DEFAULT_ENERGY = 500
 
 type Bot struct {
 	world          *World
-	Brain          behaviour.IBrain
+	Brain          *BotBrain
 	Energy         int
 	Age            int
 	Pos            int

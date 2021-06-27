@@ -11,9 +11,10 @@ var (
 
 	worlMapRegionBorderColor = pixel.RGB(0.6, 0.6, 0.6)
 
-	wallColor = colornames.Brown
-	botColor  = colornames.Darkcyan
-	foodColor = colornames.Green
+	wallColor      = colornames.Brown
+	botColor       = colornames.Darkcyan
+	botMutantColor = colornames.Deeppink
+	foodColor      = colornames.Green
 
 	botWidth      = 65
 	botHeight     = 40

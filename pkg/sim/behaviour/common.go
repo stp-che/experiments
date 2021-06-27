@@ -16,10 +16,10 @@ type ProcessingResult struct {
 	EnergyCost int
 }
 
-// Signal being received by analyzer system in form {N: {A0, A1, ..., An}}
+// Signal being received by analyzer system in form {N: {i: Ai}}
 // where N is an index of analyzer cell and Ai is a number of signal i received by the analyzer cell
 // TODO: think about converting to map[uint8]map[uint8]uint8
-type CollectedOuterSignal map[uint8][]uint8
+type CollectedOuterSignal map[uint8]map[uint8]uint8
 
 type OuterAnalyzerNetCorrection map[uint8]float32
 

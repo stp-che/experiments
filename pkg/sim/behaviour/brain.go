@@ -3,6 +3,7 @@ package behaviour
 type IBrain interface {
 	Process([]OuterInput, InnerInput) *ProcessingResult
 	VisionRange() int
+	Mutate(int) IBrain
 }
 
 type Brain struct {
@@ -57,7 +58,7 @@ func (b *Brain) energyCost(activations ManipulationSystemActivation) int {
 	return baseCost + (activityCost-1)/32 + 1
 }
 
-func (b *Brain) Mutate(n int) *Brain {
+func (b *Brain) Mutate(n int) IBrain {
 	return randomMutation(3, len(b.Content)).Apply(b)
 }
 

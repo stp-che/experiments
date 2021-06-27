@@ -23,8 +23,8 @@ func TestActivation(t *testing.T) {
 		{
 			Net: testNet,
 			Signal: CollectedOuterSignal{
-				0: {2, 1},
-				1: {1, 1},
+				0: {0: 2, 1: 1},
+				1: {0: 1, 1: 1},
 			},
 			Correction: OuterAnalyzerNetCorrection{},
 			Result:     map[uint8]int16{5: 15, 8: 250},
@@ -32,15 +32,21 @@ func TestActivation(t *testing.T) {
 		{
 			Net: testNet,
 			Signal: CollectedOuterSignal{
-				0: {2, 1},
-				1: {1, 1},
+				0: {0: 2, 1: 1},
+				1: {0: 1, 1: 1},
 			},
 			Correction: OuterAnalyzerNetCorrection{1: 0.11},
 			Result:     map[uint8]int16{5: 15, 8: 72},
 		},
 		{
 			Net:        testNet,
-			Signal:     CollectedOuterSignal{2: {2, 1}},
+			Signal:     CollectedOuterSignal{2: {0: 2, 1: 1}},
+			Correction: OuterAnalyzerNetCorrection{},
+			Result:     map[uint8]int16{},
+		},
+		{
+			Net:        testNet,
+			Signal:     CollectedOuterSignal{0: {99: 2}},
 			Correction: OuterAnalyzerNetCorrection{},
 			Result:     map[uint8]int16{},
 		},

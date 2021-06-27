@@ -29,6 +29,10 @@ func (b *testBotBrain) VisionRange() int {
 	return b.visionRange
 }
 
+func (b *testBotBrain) Mutate(_ int) behaviour.IBrain {
+	return b
+}
+
 func (b *testBotBrain) SetVisionRange(r int) {
 	b.visionRange = r
 }
@@ -68,7 +72,7 @@ func prepare(c testSimConfig) (*Experiment, []*testBotBrain) {
 	bots := make([]*Bot, botsCount)
 	for i := 0; i < botsCount; i++ {
 		brains[i] = &testBotBrain{}
-		bots[i] = (&Bot{Brain: brains[i]}).Init(world)
+		bots[i] = (&Bot{Brain: &BotBrain{Brain: brains[i]}}).Init(world)
 		pos := c.BotsPos[i]
 		(&putBot{
 			Bot: bots[i],

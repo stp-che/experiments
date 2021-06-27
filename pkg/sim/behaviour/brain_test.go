@@ -133,7 +133,7 @@ func TestNormalizeContent(t *testing.T) {
 			0, 10, 1, 111,
 			0, 10, 44, 222,
 			// OuterAnalyzerNet
-			200, 0, 0, 129,
+			200, 52, 0, 129,
 			155, 0, 99, 255,
 			0, 1, 100, 28,
 			// ManipulationSystem
@@ -151,7 +151,7 @@ func TestNormalizeContent(t *testing.T) {
 		0, 10, 1, 111,
 		0, 10, 2, 222,
 		// OuterAnalyzerNet
-		0, 0, 0, 129,
+		0, 52, 0, 129,
 		1, 0, 1, 255,
 		0, 1, 0, 28,
 		// ManipulationSystem

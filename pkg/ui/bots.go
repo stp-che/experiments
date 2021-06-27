@@ -50,8 +50,9 @@ func (b *BotsGroupView) Init(group sim.BotsGroup) *BotsGroupView {
 	for i, bot := range group.Bots {
 		col, row := i%4, i/4
 		b.bots[i] = &BotView{
-			Bot:     bot,
-			TopLeft: b.TopLeft.Add(pixel.V(float64(botOuterWidth*col), -float64(botOuterHeight*row))),
+			isMutant: bot.Brain.ID != group.Brain.ID,
+			Bot:      bot,
+			TopLeft:  b.TopLeft.Add(pixel.V(float64(botOuterWidth*col), -float64(botOuterHeight*row))),
 		}
 	}
 	return b
@@ -74,6 +75,7 @@ func (b *BotsGroupView) RenderText(win *pixelgl.Window) {
 }
 
 type BotView struct {
+	isMutant  bool
 	Bot       *sim.Bot
 	TopLeft   pixel.Vec
 	textAtlas *text.Atlas
@@ -81,6 +83,9 @@ type BotView struct {
 
 func (b *BotView) Render(imd *imdraw.IMDraw) {
 	imd.Color = aliveBotColor
+	if b.isMutant {
+		imd.Color = botMutantColor
+	}
 	if !b.Bot.IsAlive() {
 		imd.Color = deadBotColor
 	}

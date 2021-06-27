@@ -7,7 +7,7 @@ import (
 )
 
 type BotsGroup struct {
-	Brain behaviour.IBrain
+	Brain *BotBrain
 	Bots  []*Bot
 }
 
@@ -17,7 +17,7 @@ type Experiment struct {
 	Number       int
 	World        *World
 	Bots         []*Bot
-	Brains       []behaviour.IBrain
+	Brains       []*BotBrain
 	Steps        int
 	foodNextStep int
 	groups       []BotsGroup
@@ -29,7 +29,7 @@ var (
 
 func (e *Experiment) init() error {
 	e.createWorld()
-	e.createGenomes()
+	e.createBrains()
 	err := e.createBots()
 	return err
 }
@@ -38,13 +38,15 @@ func (e *Experiment) createWorld() {
 	e.World = newWorld(e.cfg.WorldWidth, e.cfg.WorldHeight)
 }
 
-func (e *Experiment) createGenomes() {
+func (e *Experiment) createBrains() {
 	if len(e.Brains) < e.cfg.BrainsNumber {
-		e.Brains = make([]behaviour.IBrain, e.cfg.BrainsNumber)
+		e.Brains = make([]*BotBrain, e.cfg.BrainsNumber)
+		for i := 0; i < e.cfg.BrainsNumber; i++ {
+			e.Brains[i] = randomBotBrain()
+		}
 	}
 	e.groups = make([]BotsGroup, e.cfg.BrainsNumber)
 	for i := 0; i < e.cfg.BrainsNumber; i++ {
-		e.Brains[i] = behaviour.RandomBrain()
 		e.groups[i] = BotsGroup{Brain: e.Brains[i]}
 	}
 }
@@ -70,6 +72,15 @@ func (e *Experiment) createBots() error {
 		e.groups[i].Bots = e.Bots[i*e.cfg.GroupSize : (i+1)*e.cfg.GroupSize]
 	}
 	return nil
+}
+
+func (e *Experiment) makeMutations() {
+	for _, g := range e.groups {
+		for i := 0; i < e.cfg.MutantsPerGroup && i < e.cfg.GroupSize; i++ {
+			b := g.Bots[e.cfg.GroupSize-i-1]
+			b.Brain = b.Brain.Mutate(3)
+		}
+	}
 }
 
 func (e *Experiment) BotsGroups() []BotsGroup {
@@ -184,8 +195,8 @@ func (e *Experiment) BotsChart() []*Bot {
 	return bots
 }
 
-func (e *Experiment) BrainsChart() []behaviour.IBrain {
-	brains := make([]behaviour.IBrain, e.cfg.BrainsNumber)
+func (e *Experiment) BrainsChart() []*BotBrain {
+	brains := make([]*BotBrain, e.cfg.BrainsNumber)
 	bots := e.BotsChart()
 	for i := 0; i < e.cfg.BrainsNumber; i++ {
 		brains[i] = bots[i].Brain

@@ -1,6 +1,8 @@
 package behaviour
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 type OuterAnalyzerLink struct {
 	Analyzer    uint8
@@ -24,14 +26,13 @@ func (a OuterAnalyzerNet) Activation(signalTable CollectedOuterSignal, correctio
 		i := link * outerAnalyzerLinkSize
 		analyzer, signal, manipulator, power := a[i], a[i+1], a[i+2], int16(a[i+3])-128
 		if sig, present := signalTable[analyzer]; present {
-			influence := int16(sig[signal]) * int16(power)
-			if corr, ok := correction[uint8(link)]; ok {
-				influence = int16(float32(influence) * corr)
+			if value, signalPresent := sig[signal]; signalPresent {
+				influence := int16(value) * int16(power)
+				if corr, ok := correction[uint8(link)]; ok {
+					influence = int16(float32(influence) * corr)
+				}
+				res[manipulator] += influence
 			}
-			if _, ok := res[manipulator]; !ok {
-				res[manipulator] = 0
-			}
-			res[manipulator] += influence
 		}
 	}
 	return res

@@ -11,7 +11,7 @@ func (r OuterReceptor) CollectSignal(signal []uint8) CollectedOuterSignal {
 	for i, sig := range signal {
 		analyzer := r[i]
 		if _, ok := res[analyzer]; !ok {
-			res[analyzer] = make([]uint8, 5)
+			res[analyzer] = make(map[uint8]uint8)
 		}
 		res[analyzer][sig] += 1
 	}

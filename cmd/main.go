@@ -12,11 +12,12 @@ import (
 )
 
 var simConfig = sim.Config{
-	ExperimentsNumber: 5,
+	ExperimentsNumber: 500,
 	WorldWidth:        100,
 	WorldHeight:       60,
 	BrainsNumber:      8,
 	GroupSize:         8,
+	MutantsPerGroup:   2,
 	FoodAmount:        100,
 }
 

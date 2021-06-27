@@ -95,6 +95,7 @@ func (s *Simulation) Step() {
 			s.finished = true
 			return
 		}
+		ex.makeMutations()
 		s.Experiment = ex
 	}
 	s.finished = s.Experiment.finished && s.Experiment.Number >= s.cfg.ExperimentsNumber
