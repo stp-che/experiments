@@ -39,7 +39,7 @@ func New(sim *sim.Simulation) (*Ui, error) {
 
 func (ui *Ui) Update() {
 	ui.Win.Clear(sceneBgColor)
-	ui.drawScene()
+	ui.Sim.Sync(func() { ui.drawScene() })
 	ui.Win.Update()
 }
 

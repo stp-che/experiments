@@ -4,6 +4,8 @@ import (
 	"errors"
 	"experiments/pkg/sim/behaviour"
 	"sort"
+	"sync"
+	"time"
 )
 
 type BotsGroup struct {
@@ -12,44 +14,61 @@ type BotsGroup struct {
 }
 
 type Simulation struct {
-	cfg          Config
-	World        *World
-	Bots         []*Bot
-	Brains       []*behaviour.Brain
-	Steps        int
-	finished     bool
-	foodNextStep int
-	groups       []BotsGroup
+	running        bool
+	finished       bool
+	cfg            Config
+	Epoch          int
+	World          *World
+	Bots           []*Bot
+	Brains         []*behaviour.Brain
+	Steps          int
+	foodNextStep   int
+	groups         []BotsGroup
+	mutex          sync.Mutex
+	tickerInterval time.Duration
+	ticker         *time.Ticker
 }
 
-// func (s *Simulation) Run(updates chan interface{}) {
-// 	go func() {
-// 		for !s.finished {
-// 			s.Step()
-// 			updates <- nil
-// 		}
-// 	}()
-// }
-
 var (
-	NoPlaceForBots = errors.New("No place for bots in the world")
+	AlreadyRunningOrFinished = errors.New("Simulation is already running or finished")
+	NoPlaceForBots           = errors.New("No place for bots in the world")
 )
+
+func (s *Simulation) Run() (chan interface{}, error) {
+	s.mutex.Lock()
+	if s.running || s.finished {
+		return nil, AlreadyRunningOrFinished
+	}
+	s.running = true
+	s.ticker = time.NewTicker(s.tickerInterval)
+	s.mutex.Unlock()
+
+	updates := make(chan interface{})
+	go func() {
+		for !s.finished {
+			<-s.ticker.C
+			s.Step()
+			updates <- nil
+		}
+	}()
+	return updates, nil
+}
 
 func (s *Simulation) Finished() bool {
 	return s.finished
 }
 
 func NewSimulation(cfg Config) (*Simulation, error) {
-	s := &Simulation{}
-	err := s.Init(cfg)
+	s := &Simulation{cfg: cfg}
+	err := s.init()
 	if err != nil {
 		return nil, err
 	}
 	return s, nil
 }
 
-func (s *Simulation) Init(cfg Config) error {
-	s.cfg = cfg
+func (s *Simulation) init() error {
+	s.tickerInterval = time.Millisecond * 1024
 	s.createWorld()
 	s.createGenomes()
 	err := s.createBots()
@@ -93,6 +112,8 @@ func (s *Simulation) createBots() error {
 }
 
 func (s *Simulation) Step() {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	if !s.finished {
 		if s.Steps == s.foodNextStep {
 			s.generateFood()
@@ -102,6 +123,12 @@ func (s *Simulation) Step() {
 		s.Steps++
 		s.finished = s.finished || aliveBotsCount == 0
 	}
+}
+
+func (s *Simulation) Sync(f func()) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	f()
 }
 
 func (s *Simulation) performStepActions() {

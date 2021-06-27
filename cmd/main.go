@@ -29,17 +29,22 @@ func run() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	tick := time.Tick(time.Millisecond * 100)
 
 	simUi.Update()
 
+	simUpdates, err := sim.Run()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	tick := time.Tick(time.Millisecond * 100)
+
 	for !simUi.Closed() {
 		select {
-		case <-tick:
-			if !sim.Finished() {
-				sim.Step()
-			}
+		case <-simUpdates:
 			simUi.Update()
+		case <-tick:
+			simUi.Win.Update()
 		default:
 			time.Sleep(time.Millisecond)
 		}
