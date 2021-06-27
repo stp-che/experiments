@@ -5,6 +5,7 @@ import (
 	"experiments/pkg/sim/core"
 	"fmt"
 	"reflect"
+	"sync"
 	"testing"
 )
 
@@ -48,7 +49,7 @@ func max(i, j int) int {
 	return j
 }
 
-func prepare(c testSimConfig) (*Simulation, []*testBotBrain) {
+func prepare(c testSimConfig) (*Experiment, []*testBotBrain) {
 	world := newWorld(max(c.W, 5), max(c.H, 5))
 
 	if c.Walls != nil {
@@ -77,12 +78,13 @@ func prepare(c testSimConfig) (*Simulation, []*testBotBrain) {
 		}).Apply()
 	}
 
-	sim := &Simulation{
+	ex := &Experiment{
 		World: world,
 		Bots:  bots,
+		mutex: &sync.Mutex{},
 	}
 
-	return sim, brains
+	return ex, brains
 }
 
 type moveTestCase struct {
@@ -173,13 +175,13 @@ func testMoveActions(t *testing.T) {
 		c("Going Left out of bounds", 15, core.Left, 15),
 	}
 	for _, c := range cases {
-		sim, genomes := prepare(testSimConfig{BotsPos: []int{c.InitialPos}})
+		ex, genomes := prepare(testSimConfig{BotsPos: []int{c.InitialPos}})
 		genomes[0].SetActions([]*behaviour.Intention{
 			{ActionType: behaviour.AMove, Direction: c.Dir},
 		})
-		sim.Step()
-		checkWorldState(t, sim.World, testWorldState{
-			Bots: map[int]*Bot{c.NewPos: sim.Bots[0]},
+		ex.Step()
+		checkWorldState(t, ex.World, testWorldState{
+			Bots: map[int]*Bot{c.NewPos: ex.Bots[0]},
 		})
 	}
 
@@ -262,13 +264,13 @@ func testEatActions(t *testing.T) {
 		{ActionType: behaviour.AEat, Direction: core.Down},
 	})
 	sim.Step()
-	assertBotEnergy(t, sim.Bots[0], 300)
-	sim.Step()
-	assertBotEnergy(t, sim.Bots[0], 300)
-	sim.Step()
-	assertBotEnergy(t, sim.Bots[0], 300)
+	assertBotEnergy(t, sim.Bots[0], 500)
 	sim.Step()
 	assertBotEnergy(t, sim.Bots[0], 500)
+	sim.Step()
+	assertBotEnergy(t, sim.Bots[0], 500)
+	sim.Step()
+	assertBotEnergy(t, sim.Bots[0], 1500)
 	checkWorldState(t, sim.World, testWorldState{
 		Walls: []int{1},
 		Bots:  map[int]*Bot{0: sim.Bots[0]},
@@ -288,9 +290,9 @@ func testEatActions(t *testing.T) {
 		{ActionType: behaviour.AEat, Direction: core.Right},
 	})
 	sim.Step()
-	assertBotEnergy(t, sim.Bots[0], 366)
-	assertBotEnergy(t, sim.Bots[1], 366)
-	assertBotEnergy(t, sim.Bots[2], 366)
+	assertBotEnergy(t, sim.Bots[0], 833)
+	assertBotEnergy(t, sim.Bots[1], 833)
+	assertBotEnergy(t, sim.Bots[2], 833)
 }
 
 func testNilActions(t *testing.T) {
@@ -311,7 +313,7 @@ func TestStep(t *testing.T) {
 }
 
 func TestBotsChart(t *testing.T) {
-	s := Simulation{
+	e := Experiment{
 		Bots: []*Bot{
 			{Movements: 1, Age: 10, Energy: 0},
 			{Movements: 1, Age: 100, Energy: 50},
@@ -335,7 +337,7 @@ func TestBotsChart(t *testing.T) {
 		{Movements: 1, Age: 10, Energy: -5},
 	}
 
-	actualChart := s.BotsChart()
+	actualChart := e.BotsChart()
 
 	if !reflect.DeepEqual(expectedChart, actualChart) {
 		t.Errorf("Expected chart to eq %s, got %s", inspect(expectedChart), inspect(actualChart))
