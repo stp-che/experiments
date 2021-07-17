@@ -188,3 +188,11 @@ func TestChangeOuterReceptor(t *testing.T) {
 		t.Errorf("Expected the rest of new brain to be a copy of original brain\n\nOriginal brain:\n%v\n\nNew brain:\n%v", brain, newBrain)
 	}
 }
+
+func TestRandomChangeOuterReceptor(t *testing.T) {
+	brain := Brain{OuterReceptor: OuterReceptor{}}
+	m := randomChangeOuterReceptor(&brain)
+	if !reflect.DeepEqual(m, mChangeOuterReceptor{}) {
+		t.Errorf("Expected zero value mChangeOuterReceptor, got: %v", m)
+	}
+}

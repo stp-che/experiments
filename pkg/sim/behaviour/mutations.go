@@ -103,8 +103,12 @@ func (m mChangeOuterReceptor) Apply(b *Brain) *Brain {
 }
 
 func randomChangeOuterReceptor(b *Brain) mChangeOuterReceptor {
-	return mChangeOuterReceptor{
-		cell:     rand.Intn(b.OuterReceptor.Size()),
-		analyzer: rand.Intn(b.OuterAnalyzersCount),
+	m := mChangeOuterReceptor{}
+	rSize := b.OuterReceptor.Size()
+	if rSize > 0 && b.OuterAnalyzersCount > 0 {
+		m.cell = rand.Intn(rSize)
+		m.analyzer = rand.Intn(b.OuterAnalyzersCount)
 	}
+
+	return m
 }
