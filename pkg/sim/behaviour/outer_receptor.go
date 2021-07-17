@@ -28,6 +28,10 @@ func (r OuterReceptor) CollectSignal(signal []uint8) CollectedOuterSignal {
 	return res
 }
 
+func (r OuterReceptor) copy() OuterReceptor {
+	return r
+}
+
 func NewOuterReceptor(visionRange uint8) OuterReceptor {
 	r := OuterReceptor{visionRange: visionRange}
 	if visionRange == 0 {

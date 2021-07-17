@@ -7,13 +7,15 @@ type iMutation interface {
 }
 
 func randomMutation(b *Brain) iMutation {
-	switch rand.Intn(2) {
+	switch rand.Intn(3) {
 	case 0:
 		return mIncreaseVisionRange{}
 	case 1:
 		return mDecreaseVisionRange{}
+	case 2:
+		return randomChangeOuterReceptor(b)
 	default:
-		return mIncreaseVisionRange{}
+		return randomChangeOuterReceptor(b)
 	}
 }
 
@@ -66,4 +68,43 @@ func (m mDecreaseVisionRange) Apply(b *Brain) *Brain {
 	newBrain.OuterReceptor = newRec
 
 	return newBrain
+}
+
+type mChangeOuterReceptor struct {
+	cell     int
+	analyzer int
+}
+
+func (m mChangeOuterReceptor) Apply(b *Brain) *Brain {
+	newBrain := b.copy()
+	if m.cell >= b.OuterReceptor.Size() || m.analyzer >= b.OuterAnalyzersCount {
+		return newBrain
+	}
+
+	w := int(b.OuterReceptor.visionRange) + 1
+	mi := m.cell / w
+	mj := m.cell % w
+
+	newRec := NewOuterReceptor(b.OuterReceptor.visionRange)
+	origCells := b.OuterReceptor.cells
+	for i := 0; i < int(newRec.visionRange); i++ {
+		for j := 0; j < int(newRec.visionRange)+1; j++ {
+			if i == mi && j == mj {
+				newRec.cells[i][j] = uint8(m.analyzer)
+			} else {
+				newRec.cells[i][j] = origCells[i][j]
+			}
+		}
+	}
+
+	newBrain.OuterReceptor = newRec
+
+	return newBrain
+}
+
+func randomChangeOuterReceptor(b *Brain) mChangeOuterReceptor {
+	return mChangeOuterReceptor{
+		cell:     rand.Intn(b.OuterReceptor.Size()),
+		analyzer: rand.Intn(b.OuterAnalyzersCount),
+	}
 }
