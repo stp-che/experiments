@@ -44,3 +44,16 @@ func (n HealthAnalyzerNet) randomize(bStruct BrainStructure) {
 		n[i+3] = uint8(rand.Intn(256))
 	}
 }
+
+// func randomHealthAnalyzerNet(outerAnalyzerNetSize int) HealthAnalyzerNet {
+// 	count := rand.Intn((outerAnalyzerNetSize+1)/2) + 1
+// 	res := make(HealthAnalyzerNet, count*healthAnalyzerLinkSize)
+// 	for i := 0; i < count; i += healthAnalyzerLinkSize {
+// 		minHealth := rand.Intn(200)
+// 		res[i] = uint8(minHealth)
+// 		res[i+1] = uint8(minHealth + rand.Intn(256-minHealth))
+// 		res[i+2] = uint8(rand.Intn(outerAnalyzerNetSize))
+// 		res[i+3] = uint8(rand.Intn(256))
+// 	}
+// 	return res
+// }

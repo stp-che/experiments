@@ -60,3 +60,16 @@ func (s ManipulationSystem) randomize(bStruct BrainStructure) {
 		}
 	}
 }
+
+// func randomManipulationSystem() ManipulationSystem {
+// 	count := rand.Intn(5) + 1
+// 	res := make(ManipulationSystem, count*manipulatorSize)
+// 	for i := 0; i < count; i++ {
+// 		j := i * manipulatorSize
+// 		res[j] = uint8(randomActionType())
+// 		for k := 0; k < 8; k++ {
+// 			res[j+k] = uint8(rand.Intn(256))
+// 		}
+// 	}
+// 	return res
+// }
