@@ -8,36 +8,49 @@ import (
 
 func testBrain() *Brain {
 	return &Brain{
-		Structure: BrainStructure{
-			VisionRange:            1,
-			OuterAnalyzersCount:    2,
-			HealthAnalyzerNetSize:  2,
-			OuterAnalyzerNetSize:   8,
-			ManipulationSystemSize: 6,
+		OuterReceptor:       []uint8{0, 1},
+		OuterAnalyzersCount: 2,
+		HealthAnalyzerNet: HealthAnalyzerNet{
+			{0, 10, 4, 255},
+			{0, 10, 5, 255},
 		},
-		Content: []uint8{
-			// OuterReceptor
-			0, 1,
-			// HealthAnalyzerNet
-			0, 10, 4, 255,
-			0, 10, 5, 255,
-			// OuterAnalyzerNet
-			0, 0, 0, 129,
-			1, 0, 1, 129,
-			0, 1, 0, 28,
-			1, 1, 1, 28,
-			0, 2, 4, 133,
-			1, 2, 5, 133,
-			0, 3, 2, 129,
-			1, 3, 3, 129,
-			// ManipulationSystem
-			uint8(AMove), 129, 128, 128, 128, 128, 128, 128, 128,
-			uint8(AMove), 128, 129, 128, 128, 128, 128, 128, 128,
-			uint8(AMove), 128, 129, 130, 135, 138, 135, 130, 129,
-			uint8(AMove), 129, 128, 129, 130, 135, 138, 135, 130,
-			uint8(AEat), 129, 128, 128, 128, 128, 128, 128, 128,
-			uint8(AEat), 128, 129, 128, 128, 128, 128, 128, 128,
+		OuterAnalyzerNet: OuterAnalyzerNet{
+			{0, 0, 0, 1},
+			{1, 0, 1, 1},
+			{0, 1, 0, -100},
+			{1, 1, 1, -100},
+			{0, 2, 4, 5},
+			{1, 2, 5, 5},
+			{0, 3, 2, 1},
+			{1, 3, 3, 1},
 		},
+		ManipulationSystem: []*Manipulator{
+			{
+				ActionType: AMove,
+				DirValues:  [8]int8{1, 0, 0, 0, 0, 0, 0, 0},
+			},
+			{
+				ActionType: AMove,
+				DirValues:  [8]int8{0, 1, 0, 0, 0, 0, 0, 0},
+			},
+			{
+				ActionType: AMove,
+				DirValues:  [8]int8{0, 1, 2, 7, 10, 7, 2, 1},
+			},
+			{
+				ActionType: AMove,
+				DirValues:  [8]int8{1, 0, 1, 2, 7, 10, 7, 2},
+			},
+			{
+				ActionType: AEat,
+				DirValues:  [8]int8{1, 0, 0, 0, 0, 0, 0, 0},
+			},
+			{
+				ActionType: AEat,
+				DirValues:  [8]int8{0, 1, 0, 0, 0, 0, 0, 0},
+			},
+		},
+		visionRange: 1,
 	}
 }
 
@@ -55,43 +68,43 @@ func TestProcess(t *testing.T) {
 			OuterInput: [][]uint8{{1, 1}, {1, 1}, {0, 1}, {1, 1}},
 			InnerInput: InnerInput{100},
 			Intention:  &Intention{AMove, core.DownRight},
-			EnergyCost: 46,
+			EnergyCost: 43,
 		},
 		{
 			OuterInput: [][]uint8{{2, 0}, {0, 0}, {0, 0}, {0, 0}},
 			InnerInput: InnerInput{100},
 			Intention:  &Intention{AEat, core.UpLeft},
-			EnergyCost: 25,
+			EnergyCost: 22,
 		},
 		{
 			OuterInput: [][]uint8{{3, 3}, {0, 0}, {0, 0}, {0, 3}},
 			InnerInput: InnerInput{100},
 			Intention:  &Intention{AMove, core.DownRight},
-			EnergyCost: 25,
+			EnergyCost: 22,
 		},
 		{
 			OuterInput: [][]uint8{{3, 0}, {3, 0}, {0, 0}, {0, 0}},
 			InnerInput: InnerInput{100},
 			Intention:  &Intention{AMove, core.Down},
-			EnergyCost: 25,
+			EnergyCost: 22,
 		},
 		{
 			OuterInput: [][]uint8{{0, 1}, {1, 0}, {0, 0}, {3, 0}},
 			InnerInput: InnerInput{100},
 			Intention:  &Intention{AMove, core.Right},
-			EnergyCost: 31,
+			EnergyCost: 28,
 		},
 		{
 			OuterInput: [][]uint8{{2, 3}, {0, 0}, {0, 0}, {0, 0}},
 			InnerInput: InnerInput{100},
 			Intention:  &Intention{AMove, core.Down},
-			EnergyCost: 25,
+			EnergyCost: 22,
 		},
 		{
 			OuterInput: [][]uint8{{2, 3}, {0, 0}, {0, 0}, {0, 0}},
 			InnerInput: InnerInput{9},
 			Intention:  &Intention{AEat, core.UpLeft},
-			EnergyCost: 27,
+			EnergyCost: 24,
 		},
 	}
 
@@ -114,52 +127,5 @@ func TestProcess(t *testing.T) {
 		if res.EnergyCost != c.EnergyCost {
 			t.Errorf("[%d] Expected EnergyCost to eq %d, got %d", i, c.EnergyCost, res.EnergyCost)
 		}
-	}
-}
-
-func TestNormalizeContent(t *testing.T) {
-	b := &Brain{
-		Structure: BrainStructure{
-			VisionRange:            1,
-			OuterAnalyzersCount:    2,
-			HealthAnalyzerNetSize:  2,
-			OuterAnalyzerNetSize:   3,
-			ManipulationSystemSize: 2,
-		},
-		Content: []uint8{
-			// OuterReceptor
-			0, 45,
-			// HealthAnalyzerNet
-			0, 10, 1, 111,
-			0, 10, 44, 222,
-			// OuterAnalyzerNet
-			200, 52, 0, 129,
-			155, 0, 99, 255,
-			0, 1, 100, 28,
-			// ManipulationSystem
-			uint8(AEat), 129, 128, 128, 128, 128, 128, 128, 128,
-			uint8(AMove) + ActionTypesCount*5, 128, 129, 128, 128, 128, 255, 255, 255,
-		},
-	}
-
-	b.NormalizeContent()
-
-	expectedContent := []uint8{
-		// OuterReceptor
-		0, 1,
-		// HealthAnalyzerNet
-		0, 10, 1, 111,
-		0, 10, 2, 222,
-		// OuterAnalyzerNet
-		0, 52, 0, 129,
-		1, 0, 1, 255,
-		0, 1, 0, 28,
-		// ManipulationSystem
-		uint8(AEat), 129, 128, 128, 128, 128, 128, 128, 128,
-		uint8(AMove), 128, 129, 128, 128, 128, 255, 255, 255,
-	}
-
-	if !reflect.DeepEqual(b.Content, expectedContent) {
-		t.Errorf("Expected Content to eq %v, got %v", expectedContent, b.Content)
 	}
 }

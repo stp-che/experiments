@@ -11,64 +11,40 @@ type OuterAnalyzerLink struct {
 	Power       int8
 }
 
-// {
-//	 Analyzer, Signal, Manipulator, Power,
-//   ...
-// }
-type OuterAnalyzerNet []uint8
-
-const outerAnalyzerLinkSize = 4
+type OuterAnalyzerNet []*OuterAnalyzerLink
 
 func (a OuterAnalyzerNet) Activation(signalTable CollectedOuterSignal, correction OuterAnalyzerNetCorrection) map[uint8]int16 {
 	res := make(map[uint8]int16)
-	count := len(a) / outerAnalyzerLinkSize
-	for link := 0; link < count; link++ {
-		i := link * outerAnalyzerLinkSize
-		analyzer, signal, manipulator, power := a[i], a[i+1], a[i+2], int16(a[i+3])-128
-		if sig, present := signalTable[analyzer]; present {
-			if value, signalPresent := sig[signal]; signalPresent {
-				influence := int16(value) * int16(power)
-				if corr, ok := correction[uint8(link)]; ok {
+	for i, link := range a {
+		if sig, present := signalTable[link.Analyzer]; present {
+			if sigValue, sigPresent := sig[link.Signal]; sigPresent {
+				influence := int16(sigValue) * int16(link.Power)
+				if corr, ok := correction[uint8(i)]; ok {
 					influence = int16(float32(influence) * corr)
 				}
-				res[manipulator] += influence
+				if _, ok := res[link.Manipulator]; !ok {
+					res[link.Manipulator] = 0
+				}
+				res[link.Manipulator] += influence
 			}
 		}
 	}
 	return res
 }
 
-func (a OuterAnalyzerNet) normalize(s BrainStructure) {
-	count := len(a) / outerAnalyzerLinkSize
-	for link := 0; link < count; link++ {
-		i := link * outerAnalyzerLinkSize
-		if a[i] >= s.OuterAnalyzersCount {
-			a[i] %= s.OuterAnalyzersCount
-		}
-		if a[i+2] >= s.ManipulationSystemSize {
-			a[i+2] %= s.ManipulationSystemSize
-		}
+func randomOuterAnalyzerNet(analyzersCount, manipulatorsCount int) OuterAnalyzerNet {
+	res := make(OuterAnalyzerNet, rand.Intn(analyzersCount)*rand.Intn(manipulatorsCount)+1)
+	for i := 0; i < len(res); i++ {
+		res[i] = randomOuterAnalyzerLink(analyzersCount, manipulatorsCount)
 	}
+	return res
 }
 
-func (a OuterAnalyzerNet) randomize(bStruct BrainStructure) {
-	for i := 0; i < int(bStruct.OuterAnalyzerNetSize); i++ {
-		j := i * outerAnalyzerLinkSize
-		a[j] = uint8(rand.Intn(int(bStruct.OuterAnalyzersCount)))
-		a[j+1] = uint8(rand.Intn(4))
-		a[j+2] = uint8(rand.Intn(int(bStruct.ManipulationSystemSize)))
-		a[j+3] = uint8(rand.Intn(256))
+func randomOuterAnalyzerLink(analyzersCount, manipulatorsCount int) *OuterAnalyzerLink {
+	return &OuterAnalyzerLink{
+		Analyzer:    uint8(rand.Intn(analyzersCount)),
+		Signal:      uint8(rand.Intn(4)),
+		Manipulator: uint8(rand.Intn(manipulatorsCount)),
+		Power:       int8(rand.Intn(256) - 128),
 	}
 }
-
-// func randomOuterAnalyzerNet(analyzersCount, manipulatorsCount int) OuterAnalyzerNet {
-// 	count := rand.Intn(analyzersCount)*rand.Intn(manipulatorsCount) + 1
-// 	res := make(OuterAnalyzerNet, count*outerAnalyzerLinkSize)
-// 	for i := 0; i < len(res); i += outerAnalyzerLinkSize {
-// 		res[i] = uint8(rand.Intn(analyzersCount))
-// 		res[i+1] = uint8(rand.Intn(4))
-// 		res[i+2] = uint8(rand.Intn(manipulatorsCount))
-// 		res[i+3] = uint8(rand.Intn(256))
-// 	}
-// 	return res
-// }

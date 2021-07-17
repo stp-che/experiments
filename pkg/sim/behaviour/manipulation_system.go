@@ -5,25 +5,26 @@ import (
 	"math/rand"
 )
 
-type ManipulationSystem []uint8
+type Manipulator struct {
+	ActionType ActionType
+	DirValues  [8]int8
+}
 
-const manipulatorSize = 9
+type ManipulationSystem []*Manipulator
 
 func (s ManipulationSystem) ComputeIntention(activations ManipulationSystemActivation) *Intention {
 	decisionTable := make(map[ActionType]*[8]int16)
 	for direction, activation := range activations {
 		dirCorretion := int(direction - core.Up)
-
-		for manipulatorIndex, power := range activation {
-			i := int(manipulatorIndex) * manipulatorSize
-			aType := actionType(s[i])
-			decisionRow, ok := decisionTable[aType]
+		for i, power := range activation {
+			mn := s[i]
+			decisionRow, ok := decisionTable[mn.ActionType]
 			if !ok {
 				decisionRow = &[8]int16{}
-				decisionTable[aType] = decisionRow
+				decisionTable[mn.ActionType] = decisionRow
 			}
-			for j := 0; j < 8; j++ {
-				decisionRow[(j+dirCorretion)%8] += (int16(s[i+j+1]) - 128) * power
+			for j, v := range mn.DirValues {
+				decisionRow[(j+dirCorretion)%8] += int16(v) * power
 			}
 		}
 	}
@@ -44,32 +45,17 @@ func (s ManipulationSystem) ComputeIntention(activations ManipulationSystemActiv
 	return intention
 }
 
-func (s ManipulationSystem) normalize(bStruct BrainStructure) {
-	for mi := 0; mi < int(bStruct.ManipulationSystemSize); mi++ {
-		i := mi * manipulatorSize
-		s[i] = uint8(actionType(s[i]))
-	}
-}
-
-func (s ManipulationSystem) randomize(bStruct BrainStructure) {
-	for i := 0; i < int(bStruct.ManipulationSystemSize); i++ {
-		j := i * manipulatorSize
-		s[j] = uint8(randomActionType())
-		for k := 0; k < 8; k++ {
-			s[j+k] = uint8(rand.Intn(256))
+func randomManipulationSystem() ManipulationSystem {
+	res := make(ManipulationSystem, rand.Intn(5)+1)
+	for i := 0; i < len(res); i++ {
+		dirValues := [8]int8{}
+		for i := 0; i < 8; i++ {
+			dirValues[i] = int8(rand.Intn(255) - 128)
+		}
+		res[i] = &Manipulator{
+			ActionType: randomActionType(),
+			DirValues:  dirValues,
 		}
 	}
+	return res
 }
-
-// func randomManipulationSystem() ManipulationSystem {
-// 	count := rand.Intn(5) + 1
-// 	res := make(ManipulationSystem, count*manipulatorSize)
-// 	for i := 0; i < count; i++ {
-// 		j := i * manipulatorSize
-// 		res[j] = uint8(randomActionType())
-// 		for k := 0; k < 8; k++ {
-// 			res[j+k] = uint8(rand.Intn(256))
-// 		}
-// 	}
-// 	return res
-// }

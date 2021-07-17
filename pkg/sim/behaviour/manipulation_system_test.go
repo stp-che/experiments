@@ -7,9 +7,18 @@ import (
 
 func TestComputeIntention(t *testing.T) {
 	ms := ManipulationSystem{
-		uint8(AMove), 129, 133, 128, 127, 128, 128, 128, 128,
-		uint8(AMove), 130, 129, 128, 128, 128, 128, 128, 128,
-		uint8(AEat), 129, 129, 129, 129, 129, 129, 130, 129,
+		{
+			ActionType: AMove,
+			DirValues:  [8]int8{1, 5, 0, -1, 0, 0, 0, 0},
+		},
+		{
+			ActionType: AMove,
+			DirValues:  [8]int8{2, 1, 0, 0, 0, 0, 0, 0},
+		},
+		{
+			ActionType: AEat,
+			DirValues:  [8]int8{1, 1, 1, 1, 1, 1, 2, 1},
+		},
 	}
 
 	cases := []struct {
