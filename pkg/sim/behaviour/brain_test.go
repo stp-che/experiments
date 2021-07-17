@@ -8,7 +8,7 @@ import (
 
 func testBrain() *Brain {
 	return &Brain{
-		OuterReceptor:       []uint8{0, 1},
+		OuterReceptor:       OuterReceptor{1, [][]uint8{{0, 1}}},
 		OuterAnalyzersCount: 2,
 		HealthAnalyzerNet: HealthAnalyzerNet{
 			{0, 10, 4, 255},
@@ -50,7 +50,6 @@ func testBrain() *Brain {
 				DirValues:  [8]int8{0, 1, 0, 0, 0, 0, 0, 0},
 			},
 		},
-		visionRange: 1,
 	}
 }
 

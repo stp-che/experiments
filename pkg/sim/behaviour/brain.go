@@ -1,7 +1,6 @@
 package behaviour
 
 import (
-	"math"
 	"math/rand"
 )
 
@@ -17,7 +16,6 @@ type Brain struct {
 	OuterAnalyzersCount int
 	OuterAnalyzerNet    OuterAnalyzerNet
 	ManipulationSystem  ManipulationSystem
-	visionRange         int
 }
 
 func (b *Brain) Process(o []OuterInput, i InnerInput) *ProcessingResult {
@@ -34,18 +32,11 @@ func (b *Brain) Process(o []OuterInput, i InnerInput) *ProcessingResult {
 }
 
 func (b *Brain) VisionRange() int {
-	if b.OuterReceptor == nil {
-		return 0
-	}
-	if b.visionRange > 0 {
-		return b.visionRange
-	}
-	b.visionRange = (int(math.Round(math.Sqrt(float64(4*len(b.OuterReceptor)+1)))) - 1) / 2
-	return b.visionRange
+	return int(b.OuterReceptor.visionRange)
 }
 
 func (b *Brain) energyCost(activations ManipulationSystemActivation) int {
-	baseCost := len(b.OuterReceptor) +
+	baseCost := b.OuterReceptor.Size() +
 		len(b.HealthAnalyzerNet) +
 		len(b.OuterAnalyzerNet) +
 		len(b.ManipulationSystem) +
@@ -63,7 +54,21 @@ func (b *Brain) energyCost(activations ManipulationSystemActivation) int {
 }
 
 func (b *Brain) Mutate(n int) IBrain {
-	return b
+	newBrain := b
+	for i := 0; i < n; i++ {
+		newBrain = randomMutation(newBrain).Apply(newBrain)
+	}
+	return newBrain
+}
+
+func (b *Brain) copy() *Brain {
+	return &Brain{
+		OuterReceptor:       b.OuterReceptor,
+		HealthAnalyzerNet:   b.HealthAnalyzerNet,
+		OuterAnalyzersCount: b.OuterAnalyzersCount,
+		OuterAnalyzerNet:    b.OuterAnalyzerNet,
+		ManipulationSystem:  b.ManipulationSystem,
+	}
 }
 
 func RandomBrain() *Brain {

@@ -1,19 +1,25 @@
 package behaviour
 
 import (
-	"fmt"
 	"math/rand"
 )
 
-type OuterReceptor []uint8
+const maxVisionRange = 15
+
+type OuterReceptor struct {
+	visionRange uint8
+	cells       [][]uint8
+}
+
+func (r OuterReceptor) Size() int {
+	return int(r.visionRange) * (int(r.visionRange) + 1)
+}
 
 func (r OuterReceptor) CollectSignal(signal []uint8) CollectedOuterSignal {
 	res := make(CollectedOuterSignal)
 	for i, sig := range signal {
-		if i >= len(r) {
-			fmt.Printf("%d\n%v\n%d\n%v\n", len(r), r, len(signal), signal)
-		}
-		analyzer := r[i]
+		w := int(r.visionRange) + 1
+		analyzer := r.cells[i/w][i%w]
 		if _, ok := res[analyzer]; !ok {
 			res[analyzer] = make(map[uint8]uint8)
 		}
@@ -22,11 +28,26 @@ func (r OuterReceptor) CollectSignal(signal []uint8) CollectedOuterSignal {
 	return res
 }
 
+func NewOuterReceptor(visionRange uint8) OuterReceptor {
+	r := OuterReceptor{visionRange: visionRange}
+	if visionRange == 0 {
+		return r
+	}
+
+	r.cells = make([][]uint8, visionRange)
+	for i := 0; i < int(visionRange); i++ {
+		r.cells[i] = make([]uint8, visionRange+1)
+	}
+	return r
+}
+
 func randomOuterReceptor(outerAnalyzerSize int) OuterReceptor {
 	n := rand.Intn(16) + 1
-	res := make(OuterReceptor, n*(n+1))
-	for i := 0; i < len(res); i++ {
-		res[i] = uint8(rand.Intn(outerAnalyzerSize))
+	res := NewOuterReceptor(uint8(n))
+	for _, cellsRow := range res.cells {
+		for i := 0; i < len(cellsRow); i++ {
+			cellsRow[i] = uint8(rand.Intn(outerAnalyzerSize))
+		}
 	}
 	return res
 }

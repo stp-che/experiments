@@ -6,7 +6,10 @@ import (
 )
 
 func TestCollectSignal(t *testing.T) {
-	receptor := &OuterReceptor{1, 2, 2, 0, 0, 0}
+	receptor := OuterReceptor{
+		visionRange: 2,
+		cells:       [][]uint8{{1, 2, 2}, {0, 0, 0}},
+	}
 	sig := []uint8{0, 2, 3, 1, 1, 0}
 	res := receptor.CollectSignal(sig)
 	expectedRes := CollectedOuterSignal{
