@@ -56,7 +56,7 @@ func (b *Brain) energyCost(activations ManipulationSystemActivation) int {
 func (b *Brain) Mutate(n int) IBrain {
 	newBrain := b
 	for i := 0; i < n; i++ {
-		newBrain = randomMutation(newBrain).Apply(newBrain)
+		newBrain = newBrain.randomMutation().apply(newBrain)
 	}
 	return newBrain
 }
@@ -80,4 +80,23 @@ func RandomBrain() *Brain {
 	b.OuterAnalyzerNet = randomOuterAnalyzerNet(b.OuterAnalyzersCount, len(b.ManipulationSystem))
 	b.HealthAnalyzerNet = randomHealthAnalyzerNet(len(b.OuterAnalyzerNet))
 	return b
+}
+
+func (b *Brain) randomMutation() iMutation {
+	switch rand.Intn(6) {
+	case 0:
+		return mIncreaseVisionRange{}
+	case 1:
+		return mDecreaseVisionRange{}
+	case 2:
+		return randomChangeOuterReceptor(b)
+	case 3:
+		return randomAddHealthAnalyzerLink(b)
+	case 4:
+		return randomChangeHealthAnalyzerCorrection(b)
+	case 5:
+		return randomChangeHealthAnalyzerMinMax(b)
+	default:
+		return randomChangeOuterReceptor(b)
+	}
 }

@@ -3,7 +3,7 @@ package sim
 import (
 	"experiments/pkg/sim/behaviour"
 	"experiments/pkg/sim/core"
-	"fmt"
+	"experiments/pkg/test_helpers"
 	"reflect"
 	"testing"
 )
@@ -329,7 +329,7 @@ func TestBotsChart(t *testing.T) {
 	}
 
 	expectedChart := []*Bot{
-		{Movements: 2, Age: 99, Energy: 1},
+		{Movements: 2, Age: 99, Energy: 0},
 		{Movements: 50, Age: 99, Energy: 0},
 		{Movements: 2, Age: 60, Energy: 0},
 		{Movements: 100, Age: 50, Energy: 0},
@@ -342,23 +342,6 @@ func TestBotsChart(t *testing.T) {
 	actualChart := e.BotsChart()
 
 	if !reflect.DeepEqual(expectedChart, actualChart) {
-		t.Errorf("Expected chart to eq %s, got %s", inspect(expectedChart), inspect(actualChart))
-	}
-}
-
-func inspect(val interface{}) string {
-	switch v := reflect.ValueOf(val); v.Kind() {
-	case reflect.Array, reflect.Slice:
-		s := "["
-		for i := 0; i < v.Len(); i++ {
-			if i > 0 {
-				s += ", "
-			}
-			s += fmt.Sprintf("%v", v.Index(i))
-		}
-		s += "]"
-		return s
-	default:
-		return fmt.Sprintf("%v", val)
+		t.Errorf("Expected chart to eq %s, got %s", test_helpers.Inspect(expectedChart), test_helpers.Inspect(actualChart))
 	}
 }

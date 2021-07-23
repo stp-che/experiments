@@ -26,3 +26,17 @@ type OuterAnalyzerNetCorrection map[uint8]float32
 // i - number of manipulator,
 // pow - power in which manipulator i is activated
 type ManipulationSystemActivation map[core.Direction]map[uint8]int16
+
+type iMutation interface {
+	apply(*Brain) *Brain
+}
+
+func cutToByte(i int) uint8 {
+	if i < 0 {
+		return 0
+	}
+	if i > 255 {
+		return 255
+	}
+	return uint8(i)
+}

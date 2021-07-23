@@ -51,7 +51,7 @@ func TestIncreaseVisionRange(t *testing.T) {
 	for i, c := range testCases {
 		brain := testBrain()
 		brain.OuterReceptor = c.origReceptor
-		newBrain := mIncreaseVisionRange{}.Apply(brain)
+		newBrain := mIncreaseVisionRange{}.apply(brain)
 
 		if !reflect.DeepEqual(newBrain.OuterReceptor, c.newReceptor) {
 			t.Errorf("[%d] Expected new outer receptor to equal %v, got %v", i, c.newReceptor, newBrain.OuterReceptor)
@@ -60,7 +60,7 @@ func TestIncreaseVisionRange(t *testing.T) {
 
 	brain := testBrain()
 	brain.OuterReceptor = OuterReceptor{1, [][]uint8{{0, 1}}}
-	newBrain := mIncreaseVisionRange{}.Apply(brain)
+	newBrain := mIncreaseVisionRange{}.apply(brain)
 
 	if !reflect.DeepEqual(brain.OuterReceptor, OuterReceptor{1, [][]uint8{{0, 1}}}) {
 		t.Errorf("Expected original brain to not change; but OuterReceptor changed to %v", brain.OuterReceptor)
@@ -109,7 +109,7 @@ func TestDencreaseVisionRange(t *testing.T) {
 	for i, c := range testCases {
 		brain := testBrain()
 		brain.OuterReceptor = c.origReceptor
-		newBrain := mDecreaseVisionRange{}.Apply(brain)
+		newBrain := mDecreaseVisionRange{}.apply(brain)
 
 		if !reflect.DeepEqual(newBrain.OuterReceptor, c.newReceptor) {
 			t.Errorf("[%d] Expected new outer receptor to equal %v, got %v", i, c.newReceptor, newBrain.OuterReceptor)
@@ -118,7 +118,7 @@ func TestDencreaseVisionRange(t *testing.T) {
 
 	brain := testBrain()
 	brain.OuterReceptor = OuterReceptor{1, [][]uint8{{0, 1}}}
-	newBrain := mIncreaseVisionRange{}.Apply(brain)
+	newBrain := mIncreaseVisionRange{}.apply(brain)
 
 	if !reflect.DeepEqual(brain.OuterReceptor, OuterReceptor{1, [][]uint8{{0, 1}}}) {
 		t.Errorf("Expected original brain to not change; but OuterReceptor changed to %v", brain.OuterReceptor)
@@ -167,7 +167,7 @@ func TestChangeOuterReceptor(t *testing.T) {
 		brain := testBrain()
 		brain.OuterAnalyzersCount = c.outerAnalyzerCount
 		brain.OuterReceptor = c.origReceptor
-		newBrain := c.mutation.Apply(brain)
+		newBrain := c.mutation.apply(brain)
 
 		if !reflect.DeepEqual(newBrain.OuterReceptor, c.newReceptor) {
 			t.Errorf("[%d] Expected new outer receptor to equal %v, got %v", i, c.newReceptor, newBrain.OuterReceptor)
@@ -177,7 +177,7 @@ func TestChangeOuterReceptor(t *testing.T) {
 	brain := testBrain()
 	brain.OuterAnalyzersCount = 2
 	brain.OuterReceptor = OuterReceptor{1, [][]uint8{{0, 1}}}
-	newBrain := mChangeOuterReceptor{1, 0}.Apply(brain)
+	newBrain := mChangeOuterReceptor{1, 0}.apply(brain)
 
 	if !reflect.DeepEqual(brain.OuterReceptor, OuterReceptor{1, [][]uint8{{0, 1}}}) {
 		t.Errorf("Expected original brain to not change; but OuterReceptor changed to %v", brain.OuterReceptor)

@@ -9,6 +9,18 @@ type HealthAnalyzerLink struct {
 	Correction        uint8
 }
 
+func (l HealthAnalyzerLink) copy() HealthAnalyzerLink {
+	return l
+	// return &HealthAnalyzerLink{
+	// 	MinHealth:         l.MinHealth,
+	// 	MaxHealth:         l.MaxHealth,
+	// 	OuterAnalyzerLink: l.OuterAnalyzerLink,
+	// 	Correction:        l.Correction,
+	// }
+}
+
+const healthAnalyzerLinkCorrectionBase = 16
+
 type HealthAnalyzerNet []*HealthAnalyzerLink
 
 func (n HealthAnalyzerNet) Correction(healthIndicator int) OuterAnalyzerNetCorrection {
@@ -21,9 +33,15 @@ func (n HealthAnalyzerNet) Correction(healthIndicator int) OuterAnalyzerNetCorre
 		if _, ok := res[link.OuterAnalyzerLink]; !ok {
 			res[link.OuterAnalyzerLink] = 1.0
 		}
-		res[link.OuterAnalyzerLink] *= float32(link.Correction) / 16
+		res[link.OuterAnalyzerLink] *= float32(link.Correction) / healthAnalyzerLinkCorrectionBase
 	}
 	return res
+}
+
+func (n HealthAnalyzerNet) copy() HealthAnalyzerNet {
+	nn := make(HealthAnalyzerNet, len(n))
+	copy(nn, n)
+	return nn
 }
 
 func randomHealthAnalyzerNet(outerAnalyzerNetSize int) HealthAnalyzerNet {

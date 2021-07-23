@@ -2,26 +2,9 @@ package behaviour
 
 import "math/rand"
 
-type iMutation interface {
-	Apply(*Brain) *Brain
-}
-
-func randomMutation(b *Brain) iMutation {
-	switch rand.Intn(3) {
-	case 0:
-		return mIncreaseVisionRange{}
-	case 1:
-		return mDecreaseVisionRange{}
-	case 2:
-		return randomChangeOuterReceptor(b)
-	default:
-		return randomChangeOuterReceptor(b)
-	}
-}
-
 type mIncreaseVisionRange struct{}
 
-func (m mIncreaseVisionRange) Apply(b *Brain) *Brain {
+func (m mIncreaseVisionRange) apply(b *Brain) *Brain {
 	newBrain := b.copy()
 	if b.OuterReceptor.visionRange == maxVisionRange {
 		return newBrain
@@ -51,7 +34,7 @@ func (m mIncreaseVisionRange) Apply(b *Brain) *Brain {
 
 type mDecreaseVisionRange struct{}
 
-func (m mDecreaseVisionRange) Apply(b *Brain) *Brain {
+func (m mDecreaseVisionRange) apply(b *Brain) *Brain {
 	newBrain := b.copy()
 	if b.OuterReceptor.visionRange == 0 {
 		return newBrain
@@ -75,7 +58,7 @@ type mChangeOuterReceptor struct {
 	analyzer int
 }
 
-func (m mChangeOuterReceptor) Apply(b *Brain) *Brain {
+func (m mChangeOuterReceptor) apply(b *Brain) *Brain {
 	newBrain := b.copy()
 	if m.cell >= b.OuterReceptor.Size() || m.analyzer >= b.OuterAnalyzersCount {
 		return newBrain
