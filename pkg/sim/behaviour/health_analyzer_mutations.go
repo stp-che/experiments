@@ -38,9 +38,9 @@ func (m mChangeHealthAnalyzerCorrection) apply(brain *Brain) *Brain {
 	if int(m.healthAnalyzerLink) < len(brain.HealthAnalyzerNet) && m.delta != 0 {
 		c := int(newBrain.HealthAnalyzerNet[m.healthAnalyzerLink].Correction) + m.delta
 		if c == healthAnalyzerLinkCorrectionBase {
-			newBrain.HealthAnalyzerNet = removeHealthAnalyserLink(newBrain.HealthAnalyzerNet, int(m.healthAnalyzerLink))
+			newBrain.HealthAnalyzerNet = removeHealthAnalyzerLink(newBrain.HealthAnalyzerNet, int(m.healthAnalyzerLink))
 		} else {
-			newBrain.HealthAnalyzerNet = changeHealthAnalyserLink(
+			newBrain.HealthAnalyzerNet = changeHealthAnalyzerLink(
 				newBrain.HealthAnalyzerNet,
 				int(m.healthAnalyzerLink),
 				func(link *HealthAnalyzerLink) { link.Correction = cutToByte(c) },
@@ -72,9 +72,9 @@ func (m mChangeHealthAnalyzerMinMax) apply(brain *Brain) *Brain {
 		newMin := cutToByte(int(targetLink.MinHealth) + m.deltaMin)
 		newMax := cutToByte(int(targetLink.MaxHealth) + m.deltaMax)
 		if newMin >= newMax {
-			newBrain.HealthAnalyzerNet = removeHealthAnalyserLink(newBrain.HealthAnalyzerNet, int(m.healthAnalyzerLink))
+			newBrain.HealthAnalyzerNet = removeHealthAnalyzerLink(newBrain.HealthAnalyzerNet, int(m.healthAnalyzerLink))
 		} else {
-			newBrain.HealthAnalyzerNet = changeHealthAnalyserLink(
+			newBrain.HealthAnalyzerNet = changeHealthAnalyzerLink(
 				newBrain.HealthAnalyzerNet,
 				int(m.healthAnalyzerLink),
 				func(link *HealthAnalyzerLink) {
@@ -102,7 +102,7 @@ func randomChangeHealthAnalyzerMinMax(b *Brain) mChangeHealthAnalyzerMinMax {
 	return m
 }
 
-func removeHealthAnalyserLink(net HealthAnalyzerNet, idx int) HealthAnalyzerNet {
+func removeHealthAnalyzerLink(net HealthAnalyzerNet, idx int) HealthAnalyzerNet {
 	newNet := make(HealthAnalyzerNet, len(net)-1)
 	for i, link := range net {
 		if i < idx {
@@ -114,7 +114,7 @@ func removeHealthAnalyserLink(net HealthAnalyzerNet, idx int) HealthAnalyzerNet 
 	return newNet
 }
 
-func changeHealthAnalyserLink(net HealthAnalyzerNet, idx int, change func(*HealthAnalyzerLink)) HealthAnalyzerNet {
+func changeHealthAnalyzerLink(net HealthAnalyzerNet, idx int, change func(*HealthAnalyzerLink)) HealthAnalyzerNet {
 	newNet := net.copy()
 	newLink := newNet[idx].copy()
 	change(&newLink)
