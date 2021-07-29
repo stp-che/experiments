@@ -47,6 +47,10 @@ func (d Direction) DeltaXY() (int, int) {
 	}
 }
 
+func (d Direction) IsValid() bool {
+	return d > 0 && d < 9
+}
+
 func (d Direction) String() string {
 	switch d {
 	case UpLeft:

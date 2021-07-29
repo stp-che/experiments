@@ -83,7 +83,7 @@ func RandomBrain() *Brain {
 }
 
 func (b *Brain) randomMutation() iMutation {
-	switch rand.Intn(7) {
+	switch rand.Intn(8) {
 	case 0:
 		return mIncreaseVisionRange{}
 	case 1:
@@ -98,6 +98,8 @@ func (b *Brain) randomMutation() iMutation {
 		return randomChangeHealthAnalyzerMinMax(b)
 	case 6:
 		return randomChangeOuterAnalyzerLinkPower(b)
+	case 7:
+		return randomChangeManipulatorValue(b)
 	default:
 		return randomChangeOuterReceptor(b)
 	}

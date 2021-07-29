@@ -10,6 +10,14 @@ type Manipulator struct {
 	DirValues  [8]int8
 }
 
+func (m Manipulator) copy() Manipulator {
+	var dirValues [8]int8
+	for i := 0; i < 8; i++ {
+		dirValues[i] = m.DirValues[i]
+	}
+	return Manipulator{m.ActionType, dirValues}
+}
+
 type ManipulationSystem []*Manipulator
 
 func (s ManipulationSystem) ComputeIntention(activations ManipulationSystemActivation) *Intention {
@@ -43,6 +51,12 @@ func (s ManipulationSystem) ComputeIntention(activations ManipulationSystemActiv
 		}
 	}
 	return intention
+}
+
+func (s ManipulationSystem) copy() ManipulationSystem {
+	ss := make(ManipulationSystem, len(s))
+	copy(ss, s)
+	return ss
 }
 
 func randomManipulationSystem() ManipulationSystem {
