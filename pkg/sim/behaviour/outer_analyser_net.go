@@ -11,6 +11,10 @@ type OuterAnalyzerLink struct {
 	Power       int8
 }
 
+func (l OuterAnalyzerLink) copy() OuterAnalyzerLink {
+	return l
+}
+
 type OuterAnalyzerNet []*OuterAnalyzerLink
 
 func (a OuterAnalyzerNet) Activation(signalTable CollectedOuterSignal, correction OuterAnalyzerNetCorrection) map[uint8]int16 {
@@ -32,6 +36,12 @@ func (a OuterAnalyzerNet) Activation(signalTable CollectedOuterSignal, correctio
 	return res
 }
 
+func (n OuterAnalyzerNet) copy() OuterAnalyzerNet {
+	nn := make(OuterAnalyzerNet, len(n))
+	copy(nn, n)
+	return nn
+}
+
 func randomOuterAnalyzerNet(analyzersCount, manipulatorsCount int) OuterAnalyzerNet {
 	res := make(OuterAnalyzerNet, rand.Intn(analyzersCount)*rand.Intn(manipulatorsCount)+1)
 	for i := 0; i < len(res); i++ {
@@ -43,7 +53,7 @@ func randomOuterAnalyzerNet(analyzersCount, manipulatorsCount int) OuterAnalyzer
 func randomOuterAnalyzerLink(analyzersCount, manipulatorsCount int) *OuterAnalyzerLink {
 	return &OuterAnalyzerLink{
 		Analyzer:    uint8(rand.Intn(analyzersCount)),
-		Signal:      uint8(rand.Intn(4)),
+		Signal:      uint8(rand.Intn(signalsCount)),
 		Manipulator: uint8(rand.Intn(manipulatorsCount)),
 		Power:       int8(rand.Intn(256) - 128),
 	}

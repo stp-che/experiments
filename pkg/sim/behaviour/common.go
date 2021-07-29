@@ -2,6 +2,8 @@ package behaviour
 
 import "experiments/pkg/sim/core"
 
+const signalsCount = 4
+
 type OuterInput struct {
 	Direction core.Direction
 	Signal    []uint8
@@ -39,4 +41,14 @@ func cutToByte(i int) uint8 {
 		return 255
 	}
 	return uint8(i)
+}
+
+func cutToInt8(i int) int8 {
+	if i < -128 {
+		return -128
+	}
+	if i > 127 {
+		return 127
+	}
+	return int8(i)
 }

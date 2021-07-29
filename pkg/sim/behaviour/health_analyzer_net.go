@@ -11,12 +11,6 @@ type HealthAnalyzerLink struct {
 
 func (l HealthAnalyzerLink) copy() HealthAnalyzerLink {
 	return l
-	// return &HealthAnalyzerLink{
-	// 	MinHealth:         l.MinHealth,
-	// 	MaxHealth:         l.MaxHealth,
-	// 	OuterAnalyzerLink: l.OuterAnalyzerLink,
-	// 	Correction:        l.Correction,
-	// }
 }
 
 const healthAnalyzerLinkCorrectionBase = 16
