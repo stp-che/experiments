@@ -28,7 +28,7 @@ func (m mChangeOuterAnalyzerLinkPower) apply(brain *Brain) *Brain {
 		newPower := cutToInt8(int(link.Power) + m.delta)
 		if newPower == 0 {
 			if !m.linkHasIncomingRefs(brain, uint8(i)) {
-				newBrain.OuterAnalyzerNet = removeOuterAnalyzerLink(newBrain.OuterAnalyzerNet, i)
+				removeOuterAnalyzerLink(newBrain, i)
 			}
 		} else {
 			newBrain.OuterAnalyzerNet = newBrain.OuterAnalyzerNet.copy()
@@ -70,14 +70,24 @@ func randomChangeOuterAnalyzerLinkPower(b *Brain) mChangeOuterAnalyzerLinkPower 
 	return m
 }
 
-func removeOuterAnalyzerLink(net OuterAnalyzerNet, idx int) OuterAnalyzerNet {
-	newNet := make(OuterAnalyzerNet, len(net)-1)
-	for i, link := range net {
+func removeOuterAnalyzerLink(b *Brain, idx int) OuterAnalyzerNet {
+	newNet := make(OuterAnalyzerNet, len(b.OuterAnalyzerNet)-1)
+	for i, link := range b.OuterAnalyzerNet {
 		if i < idx {
 			newNet[i] = link
 		} else if i > idx {
 			newNet[i-1] = link
 		}
 	}
+	b.OuterAnalyzerNet = newNet
+	newHealthAnalyzerNet := b.HealthAnalyzerNet.copy()
+	for i, link := range newHealthAnalyzerNet {
+		if link.OuterAnalyzerLink > uint8(idx) {
+			newLink := link.copy()
+			newLink.OuterAnalyzerLink--
+			newHealthAnalyzerNet[i] = &newLink
+		}
+	}
+	b.HealthAnalyzerNet = newHealthAnalyzerNet
 	return newNet
 }

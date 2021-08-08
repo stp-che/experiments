@@ -38,7 +38,7 @@ func (m mChangeHealthAnalyzerCorrection) apply(brain *Brain) *Brain {
 	if int(m.healthAnalyzerLink) < len(brain.HealthAnalyzerNet) && m.delta != 0 {
 		c := int(newBrain.HealthAnalyzerNet[m.healthAnalyzerLink].Correction) + m.delta
 		if c == healthAnalyzerLinkCorrectionBase {
-			newBrain.HealthAnalyzerNet = removeHealthAnalyzerLink(newBrain.HealthAnalyzerNet, int(m.healthAnalyzerLink))
+			removeHealthAnalyzerLink(newBrain, int(m.healthAnalyzerLink))
 		} else {
 			newBrain.HealthAnalyzerNet = changeHealthAnalyzerLink(
 				newBrain.HealthAnalyzerNet,
@@ -72,7 +72,7 @@ func (m mChangeHealthAnalyzerMinMax) apply(brain *Brain) *Brain {
 		newMin := cutToByte(int(targetLink.MinHealth) + m.deltaMin)
 		newMax := cutToByte(int(targetLink.MaxHealth) + m.deltaMax)
 		if newMin >= newMax {
-			newBrain.HealthAnalyzerNet = removeHealthAnalyzerLink(newBrain.HealthAnalyzerNet, int(m.healthAnalyzerLink))
+			removeHealthAnalyzerLink(newBrain, int(m.healthAnalyzerLink))
 		} else {
 			newBrain.HealthAnalyzerNet = changeHealthAnalyzerLink(
 				newBrain.HealthAnalyzerNet,
@@ -102,16 +102,16 @@ func randomChangeHealthAnalyzerMinMax(b *Brain) mChangeHealthAnalyzerMinMax {
 	return m
 }
 
-func removeHealthAnalyzerLink(net HealthAnalyzerNet, idx int) HealthAnalyzerNet {
-	newNet := make(HealthAnalyzerNet, len(net)-1)
-	for i, link := range net {
+func removeHealthAnalyzerLink(b *Brain, idx int) {
+	newNet := make(HealthAnalyzerNet, len(b.HealthAnalyzerNet)-1)
+	for i, link := range b.HealthAnalyzerNet {
 		if i < idx {
 			newNet[i] = link
 		} else if i > idx {
 			newNet[i-1] = link
 		}
 	}
-	return newNet
+	b.HealthAnalyzerNet = newNet
 }
 
 func changeHealthAnalyzerLink(net HealthAnalyzerNet, idx int, change func(*HealthAnalyzerLink)) HealthAnalyzerNet {

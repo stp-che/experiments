@@ -17,10 +17,11 @@ func TestChangeOuterAnalyzerLinkPower(t *testing.T) {
 	mSys := ManipulationSystem{&Manipulator{}, &Manipulator{}}
 
 	testCases := []struct {
-		desc              string
-		healthAnalyzerNet HealthAnalyzerNet
-		mutation          mChangeOuterAnalyzerLinkPower
-		newNet            OuterAnalyzerNet
+		desc                 string
+		healthAnalyzerNet    func() HealthAnalyzerNet
+		mutation             mChangeOuterAnalyzerLinkPower
+		newNet               OuterAnalyzerNet
+		newHealthAnalyzerNet HealthAnalyzerNet
 	}{
 		{
 			desc:     "increase power",
@@ -55,16 +56,26 @@ func TestChangeOuterAnalyzerLinkPower(t *testing.T) {
 			},
 		},
 		{
-			desc:     "when power gets zero",
+			desc: "when power gets zero",
+			healthAnalyzerNet: func() HealthAnalyzerNet {
+				return HealthAnalyzerNet{
+					&HealthAnalyzerLink{0, 10, 1, 50},
+				}
+			},
 			mutation: mChangeOuterAnalyzerLinkPower{0, 0, 0, -20},
 			newNet: OuterAnalyzerNet{
 				&OuterAnalyzerLink{1, 0, 1, -5},
 			},
+			newHealthAnalyzerNet: HealthAnalyzerNet{
+				&HealthAnalyzerLink{0, 10, 0, 50},
+			},
 		},
 		{
 			desc: "when power gets zero but there are references from health analyzer",
-			healthAnalyzerNet: HealthAnalyzerNet{
-				&HealthAnalyzerLink{0, 10, 0, 50},
+			healthAnalyzerNet: func() HealthAnalyzerNet {
+				return HealthAnalyzerNet{
+					&HealthAnalyzerLink{0, 10, 0, 50},
+				}
 			},
 			mutation: mChangeOuterAnalyzerLinkPower{0, 0, 0, -20},
 			newNet: OuterAnalyzerNet{
@@ -123,7 +134,9 @@ func TestChangeOuterAnalyzerLinkPower(t *testing.T) {
 			brain.OuterAnalyzerNet = origNet()
 			brain.OuterAnalyzersCount = outerAnalyzerCount
 			brain.ManipulationSystem = mSys
-			brain.HealthAnalyzerNet = c.healthAnalyzerNet
+			if c.healthAnalyzerNet != nil {
+				brain.HealthAnalyzerNet = c.healthAnalyzerNet()
+			}
 
 			newBrain := c.mutation.apply(brain)
 
@@ -135,7 +148,18 @@ func TestChangeOuterAnalyzerLinkPower(t *testing.T) {
 				t.Errorf("Expected original brain to not change; but OuterAnalyzerNet changed to %v",
 					test_helpers.Inspect(brain.OuterAnalyzerNet))
 			}
+			if c.newHealthAnalyzerNet != nil {
+				if !reflect.DeepEqual(newBrain.HealthAnalyzerNet, c.newHealthAnalyzerNet) {
+					t.Errorf("[Expected new HealthAnalyzerNet to equal %s, got %s",
+						test_helpers.Inspect(c.newHealthAnalyzerNet), test_helpers.Inspect(newBrain.HealthAnalyzerNet))
+				}
+				if !reflect.DeepEqual(brain.HealthAnalyzerNet, c.healthAnalyzerNet()) {
+					t.Errorf("Expected original brain to not change; but HealthAnalyzerNet changed to %v",
+						test_helpers.Inspect(brain.HealthAnalyzerNet))
+				}
+			}
 			newBrain.OuterAnalyzerNet = brain.OuterAnalyzerNet
+			newBrain.HealthAnalyzerNet = brain.HealthAnalyzerNet
 			if !reflect.DeepEqual(brain, newBrain) {
 				t.Errorf("Expected the rest of new brain to be a copy of original brain\n\nOriginal brain:\n%v\n\nNew brain:\n%v", brain, newBrain)
 			}
