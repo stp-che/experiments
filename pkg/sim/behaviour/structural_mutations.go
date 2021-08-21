@@ -1,5 +1,14 @@
 package behaviour
 
+import (
+	"math/rand"
+)
+
+const (
+	maxOuterAnalyzerCount = 255
+	maxManipulatorsCount  = 255
+)
+
 type reductiveMutation struct{}
 
 func (m reductiveMutation) apply(b *Brain) *Brain {
@@ -120,4 +129,37 @@ func findUselessHealthLink(b *Brain) int {
 		}
 	}
 	return -1
+}
+
+type mAddOuterAnalyzer struct{}
+
+func (m mAddOuterAnalyzer) apply(b *Brain) *Brain {
+	newBrain := b.copy()
+	if newBrain.OuterAnalyzersCount < maxOuterAnalyzerCount {
+		newBrain.OuterAnalyzersCount++
+	}
+	return newBrain
+}
+
+type mAddManipulator struct {
+	action    ActionType
+	dirValues [8]int8
+}
+
+func (m mAddManipulator) apply(b *Brain) *Brain {
+	newBrain := b.copy()
+	if len(b.ManipulationSystem) < maxManipulatorsCount {
+		newManipulator := Manipulator{m.action, m.dirValues}
+		newBrain.ManipulationSystem = append(b.ManipulationSystem, &newManipulator)
+	}
+	return newBrain
+}
+
+func randomAddManipulatorMutation() mAddManipulator {
+	dirValues := [8]int8{}
+	dirValues[rand.Intn(8)] = int8(rand.Intn(manipulatorValueMaxDelta*2+1) - manipulatorValueMaxDelta)
+	return mAddManipulator{
+		action:    randomActionType(),
+		dirValues: dirValues,
+	}
 }

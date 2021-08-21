@@ -198,3 +198,86 @@ func TestReductiveMutation(t *testing.T) {
 		})
 	}
 }
+
+func TestAddOuterAnalyzerMutation(t *testing.T) {
+	testCases := []struct {
+		desc                    string
+		origOuterAnalyzersCount int
+		newOuterAnalyzersCount  int
+	}{
+		{"increases OuterAnalyzerCount", 45, 46},
+		{"does not increase OuterAnalyzersCount when maximum reached", 255, 255},
+	}
+
+	for _, c := range testCases {
+		t.Run(c.desc, func(t *testing.T) {
+			brain := testBrain()
+			brain.OuterAnalyzersCount = c.origOuterAnalyzersCount
+			newBrain := (mAddOuterAnalyzer{}).apply(brain)
+
+			if newBrain.OuterAnalyzersCount != c.newOuterAnalyzersCount {
+				t.Errorf("Expect new brain OuterAnalyzerCount to eq %d, got %d", c.newOuterAnalyzersCount, newBrain.OuterAnalyzersCount)
+			}
+
+			origBrain := testBrain()
+			origBrain.OuterAnalyzersCount = c.origOuterAnalyzersCount
+			if !reflect.DeepEqual(brain, origBrain) {
+				t.Errorf("Expected original brain to not change but changed to:\n%s", test_helpers.Inspect(brain))
+			}
+		})
+	}
+}
+
+func TestAddManipulator(t *testing.T) {
+	testCases := []struct {
+		desc                   string
+		origManipulationSystem ManipulationSystem
+		mutation               mAddManipulator
+		newManipulationSystem  ManipulationSystem
+	}{
+		{
+			desc: "adds manipulator",
+			origManipulationSystem: ManipulationSystem{
+				&Manipulator{AMove, [8]int8{1}},
+				&Manipulator{AEat, [8]int8{2}},
+			},
+			mutation: mAddManipulator{AMove, [8]int8{3}},
+			newManipulationSystem: ManipulationSystem{
+				&Manipulator{AMove, [8]int8{1}},
+				&Manipulator{AEat, [8]int8{2}},
+				&Manipulator{AMove, [8]int8{3}},
+			},
+		},
+		{
+			desc:                   "does not add manipulator if maximum reached",
+			origManipulationSystem: make(ManipulationSystem, 255),
+			mutation:               mAddManipulator{},
+			newManipulationSystem:  make(ManipulationSystem, 255),
+		},
+	}
+
+	for _, c := range testCases {
+		t.Run(c.desc, func(t *testing.T) {
+			brain := testBrain()
+			brain.ManipulationSystem = c.origManipulationSystem
+			newBrain := c.mutation.apply(brain)
+
+			if !reflect.DeepEqual(newBrain.ManipulationSystem, c.newManipulationSystem) {
+				t.Errorf("Expected new brain ManipulationSystem to eq\n\n%s\n\ngot\n\n%s",
+					test_helpers.Inspect(c.newManipulationSystem), test_helpers.Inspect(newBrain.ManipulationSystem))
+			}
+
+			origBrain := testBrain()
+			origBrain.ManipulationSystem = c.origManipulationSystem
+			if !reflect.DeepEqual(brain, origBrain) {
+				t.Errorf("Expected original brain to not change but changed to:\n%s", test_helpers.Inspect(brain))
+			}
+
+			newBrain.ManipulationSystem = brain.ManipulationSystem
+			if !reflect.DeepEqual(brain, newBrain) {
+				t.Errorf("Expected only ManipulationSystem to be changed but changed something else as well:\n\norig brain\n\n%s\n\nnew brain\n\n%s",
+					test_helpers.Inspect(brain), test_helpers.Inspect(newBrain))
+			}
+		})
+	}
+}

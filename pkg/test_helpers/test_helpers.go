@@ -37,6 +37,9 @@ func inspectValue(v reflect.Value) string {
 		s += "}"
 		return s
 	case reflect.Ptr:
+		if v.IsNil() {
+			return "nil"
+		}
 		return "&" + inspectValue(v.Elem())
 	default:
 		return fmt.Sprintf("%v", v)
