@@ -90,7 +90,7 @@ func TestChangeManipulatorValue(t *testing.T) {
 					test_helpers.Inspect(brain.ManipulationSystem))
 			}
 			newBrain.ManipulationSystem = brain.ManipulationSystem
-			if !reflect.DeepEqual(brain, newBrain) {
+			if !brainsEqual(brain, newBrain) {
 				t.Errorf("Expected the rest of new brain to be a copy of original brain\n\nOriginal brain:\n%v\n\nNew brain:\n%v", brain, newBrain)
 			}
 		})
@@ -104,7 +104,7 @@ func TestRandomChangeManipulatorValue(t *testing.T) {
 		t.Errorf("Expected zero value mChangeManipulatorValue, got: %v", m)
 	}
 	newBrain := m.apply(&brain)
-	if !reflect.DeepEqual(&brain, newBrain) {
+	if !brainsEqual(&brain, newBrain) {
 		t.Errorf("Expected mutation not to be applied because of incorrect link")
 	}
 }

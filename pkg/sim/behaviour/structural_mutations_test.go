@@ -187,12 +187,12 @@ func TestReductiveMutation(t *testing.T) {
 			brain := c.origBrain()
 			newBrain := new(reductiveMutation).apply(brain)
 
-			if !reflect.DeepEqual(newBrain, c.newBrain) {
+			if !brainsEqual(newBrain, c.newBrain) {
 				t.Errorf("Expected new brain to equal\n\n%s\n\ngot\n\n%s",
 					test_helpers.Inspect(c.newBrain), test_helpers.Inspect(newBrain))
 			}
 
-			if !reflect.DeepEqual(brain, c.origBrain()) {
+			if !brainsEqual(brain, c.origBrain()) {
 				t.Errorf("Expected original brain to not change but changed to:\n%s", test_helpers.Inspect(brain))
 			}
 		})
@@ -221,7 +221,7 @@ func TestAddOuterAnalyzerMutation(t *testing.T) {
 
 			origBrain := testBrain()
 			origBrain.OuterAnalyzersCount = c.origOuterAnalyzersCount
-			if !reflect.DeepEqual(brain, origBrain) {
+			if !brainsEqual(brain, origBrain) {
 				t.Errorf("Expected original brain to not change but changed to:\n%s", test_helpers.Inspect(brain))
 			}
 		})
@@ -269,12 +269,12 @@ func TestAddManipulator(t *testing.T) {
 
 			origBrain := testBrain()
 			origBrain.ManipulationSystem = c.origManipulationSystem
-			if !reflect.DeepEqual(brain, origBrain) {
+			if !brainsEqual(brain, origBrain) {
 				t.Errorf("Expected original brain to not change but changed to:\n%s", test_helpers.Inspect(brain))
 			}
 
 			newBrain.ManipulationSystem = brain.ManipulationSystem
-			if !reflect.DeepEqual(brain, newBrain) {
+			if !brainsEqual(brain, newBrain) {
 				t.Errorf("Expected only ManipulationSystem to be changed but changed something else as well:\n\norig brain\n\n%s\n\nnew brain\n\n%s",
 					test_helpers.Inspect(brain), test_helpers.Inspect(newBrain))
 			}

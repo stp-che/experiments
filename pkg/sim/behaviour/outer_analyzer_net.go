@@ -1,6 +1,7 @@
 package behaviour
 
 import (
+	"fmt"
 	"math/rand"
 )
 
@@ -16,6 +17,19 @@ func (l OuterAnalyzerLink) copy() OuterAnalyzerLink {
 }
 
 type OuterAnalyzerNet []*OuterAnalyzerLink
+
+func (n OuterAnalyzerNet) String() string {
+	s := "["
+	for i, link := range n {
+		if i > 0 {
+			s += ", "
+		}
+		s += fmt.Sprintf("&{%d, %d, %d, %d}", link.Analyzer, link.Signal, link.Manipulator, link.Power)
+	}
+	s += "]"
+
+	return s
+}
 
 func (a OuterAnalyzerNet) Activation(signalTable CollectedOuterSignal, correction OuterAnalyzerNetCorrection) map[uint8]int16 {
 	res := make(map[uint8]int16)
@@ -39,6 +53,17 @@ func (a OuterAnalyzerNet) Activation(signalTable CollectedOuterSignal, correctio
 func (n OuterAnalyzerNet) copy() OuterAnalyzerNet {
 	nn := make(OuterAnalyzerNet, len(n))
 	copy(nn, n)
+	return nn
+}
+
+func (n OuterAnalyzerNet) appendSafely(link *OuterAnalyzerLink) OuterAnalyzerNet {
+	size := len(n)
+	nn := make(OuterAnalyzerNet, size+1)
+	for i := 0; i < size; i++ {
+		nn[i] = n[i]
+	}
+	nn[size] = link
+
 	return nn
 }
 

@@ -14,7 +14,7 @@ type mAddHealthAnalyzerLink struct {
 func (m mAddHealthAnalyzerLink) apply(brain *Brain) *Brain {
 	newBrain := brain.copy()
 	if int(m.link.OuterAnalyzerLink) < len(brain.OuterAnalyzerNet) {
-		newBrain.HealthAnalyzerNet = append(brain.HealthAnalyzerNet, &m.link)
+		newBrain.HealthAnalyzerNet = brain.HealthAnalyzerNet.appendSafely(&m.link)
 	}
 	return newBrain
 }

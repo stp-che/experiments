@@ -2,6 +2,7 @@ package behaviour
 
 import (
 	"experiments/pkg/sim/core"
+	"fmt"
 	"math/rand"
 )
 
@@ -19,6 +20,19 @@ func (m Manipulator) copy() Manipulator {
 }
 
 type ManipulationSystem []*Manipulator
+
+func (n ManipulationSystem) String() string {
+	s := "["
+	for i, m := range n {
+		if i > 0 {
+			s += ", "
+		}
+		s += fmt.Sprintf("&{%v, %v}", m.ActionType, m.DirValues)
+	}
+	s += "]"
+
+	return s
+}
 
 func (s ManipulationSystem) ComputeIntention(activations ManipulationSystemActivation) *Intention {
 	decisionTable := make(map[ActionType]*[8]int16)
@@ -56,6 +70,17 @@ func (s ManipulationSystem) ComputeIntention(activations ManipulationSystemActiv
 func (s ManipulationSystem) copy() ManipulationSystem {
 	ss := make(ManipulationSystem, len(s))
 	copy(ss, s)
+	return ss
+}
+
+func (s ManipulationSystem) appendSafely(m *Manipulator) ManipulationSystem {
+	size := len(s)
+	ss := make(ManipulationSystem, size+1)
+	for i := 0; i < size; i++ {
+		ss[i] = s[i]
+	}
+	ss[size] = m
+
 	return ss
 }
 

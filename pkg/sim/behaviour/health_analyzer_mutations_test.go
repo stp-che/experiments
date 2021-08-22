@@ -25,7 +25,7 @@ func TestAddHealthAnalyzerLink(t *testing.T) {
 	}
 
 	newBrain.HealthAnalyzerNet = brain.HealthAnalyzerNet
-	if !reflect.DeepEqual(brain, newBrain) {
+	if !brainsEqual(brain, newBrain) {
 		t.Errorf("Expected the rest of new brain to be a copy of original brain\n\nOriginal brain:\n%v\n\nNew brain:\n%v", brain, newBrain)
 	}
 
@@ -43,7 +43,7 @@ func TestRandomAddHealthAnalyzerLink(t *testing.T) {
 		t.Errorf("Expected zero value mChangeOuterReceptor, got: %v", m)
 	}
 	newBrain := m.apply(&brain)
-	if !reflect.DeepEqual(&brain, newBrain) {
+	if !brainsEqual(&brain, newBrain) {
 		t.Errorf("Expected mutation not to be applied because of incorrect link")
 	}
 }
@@ -123,7 +123,7 @@ func TestChangeHealthAnalyzerCorrection(t *testing.T) {
 	}
 
 	newBrain.HealthAnalyzerNet = brain.HealthAnalyzerNet
-	if !reflect.DeepEqual(brain, newBrain) {
+	if !brainsEqual(brain, newBrain) {
 		t.Errorf("Expected the rest of new brain to be a copy of original brain\n\nOriginal brain:\n%v\n\nNew brain:\n%v", brain, newBrain)
 	}
 }
@@ -135,7 +135,7 @@ func TestRandomChangeHealthAnalyzerCorrection(t *testing.T) {
 		t.Errorf("Expected zero value mChangeHealthAnalyzerCorrection, got: %v", m)
 	}
 	newBrain := m.apply(&brain)
-	if !reflect.DeepEqual(&brain, newBrain) {
+	if !brainsEqual(&brain, newBrain) {
 		t.Errorf("Expected mutation not to be applied because of incorrect link")
 	}
 }
@@ -219,7 +219,7 @@ func TestChangeHealthAnalyzerMinMax(t *testing.T) {
 	}
 
 	newBrain.HealthAnalyzerNet = brain.HealthAnalyzerNet
-	if !reflect.DeepEqual(brain, newBrain) {
+	if !brainsEqual(brain, newBrain) {
 		t.Errorf("Expected the rest of new brain to be a copy of original brain\n\nOriginal brain:\n%v\n\nNew brain:\n%v", brain, newBrain)
 	}
 }
@@ -231,7 +231,7 @@ func TestRandomChangeHealthAnalyzerMinMax(t *testing.T) {
 		t.Errorf("Expected zero value mChangeHealthAnalyzerCorrection, got: %v", m)
 	}
 	newBrain := m.apply(&brain)
-	if !reflect.DeepEqual(&brain, newBrain) {
+	if !brainsEqual(&brain, newBrain) {
 		t.Errorf("Expected mutation not to be applied because of incorrect link")
 	}
 }

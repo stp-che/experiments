@@ -67,7 +67,7 @@ func TestIncreaseVisionRange(t *testing.T) {
 	}
 
 	newBrain.OuterReceptor = brain.OuterReceptor
-	if !reflect.DeepEqual(brain, newBrain) {
+	if !brainsEqual(brain, newBrain) {
 		t.Errorf("Expected the rest of new brain to be a copy of original brain\n\nOriginal brain:\n%v\n\nNew brain:\n%v", brain, newBrain)
 	}
 }
@@ -125,7 +125,7 @@ func TestDencreaseVisionRange(t *testing.T) {
 	}
 
 	newBrain.OuterReceptor = brain.OuterReceptor
-	if !reflect.DeepEqual(brain, newBrain) {
+	if !brainsEqual(brain, newBrain) {
 		t.Errorf("Expected the rest of new brain to be a copy of original brain\n\nOriginal brain:\n%v\n\nNew brain:\n%v", brain, newBrain)
 	}
 }
@@ -184,7 +184,7 @@ func TestChangeOuterReceptor(t *testing.T) {
 	}
 
 	newBrain.OuterReceptor = brain.OuterReceptor
-	if !reflect.DeepEqual(brain, newBrain) {
+	if !brainsEqual(brain, newBrain) {
 		t.Errorf("Expected the rest of new brain to be a copy of original brain\n\nOriginal brain:\n%v\n\nNew brain:\n%v", brain, newBrain)
 	}
 }

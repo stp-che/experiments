@@ -1,6 +1,7 @@
 package behaviour
 
 import (
+	"fmt"
 	"math/rand"
 )
 
@@ -9,6 +10,10 @@ const maxVisionRange = 15
 type OuterReceptor struct {
 	visionRange uint8
 	cells       [][]uint8
+}
+
+func (r OuterReceptor) String() string {
+	return fmt.Sprintf("{%d, %v}", r.visionRange, r.cells)
 }
 
 func (r OuterReceptor) Size() int {

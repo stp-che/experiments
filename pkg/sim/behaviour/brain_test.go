@@ -53,6 +53,16 @@ func testBrain() *Brain {
 	}
 }
 
+func brainsEqual(b1, b2 *Brain) bool {
+	u1, u2 := b1.uuid, b1.origUuid
+	defer (func() {
+		b1.uuid, b1.origUuid = u1, u2
+	})()
+
+	b1.uuid, b1.origUuid = b2.uuid, b2.origUuid
+	return reflect.DeepEqual(b1, b2)
+}
+
 type processTestCase struct {
 	OuterInput [][]uint8
 	InnerInput InnerInput

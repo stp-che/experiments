@@ -1,7 +1,11 @@
 package behaviour
 
 import (
+	"experiments/pkg/test_helpers"
+	"fmt"
 	"math/rand"
+
+	"github.com/google/uuid"
 )
 
 type IBrain interface {
@@ -11,6 +15,8 @@ type IBrain interface {
 }
 
 type Brain struct {
+	uuid                uuid.UUID
+	origUuid            uuid.UUID
 	OuterReceptor       OuterReceptor
 	HealthAnalyzerNet   HealthAnalyzerNet
 	OuterAnalyzersCount int
@@ -19,6 +25,13 @@ type Brain struct {
 }
 
 func (b *Brain) Process(o []OuterInput, i InnerInput) *ProcessingResult {
+	defer func() {
+		if r := recover(); r != nil {
+			msg := b.strf("PANIC %v\n\nBrain content:\n\n%s\n", r, test_helpers.Inspect(b))
+			fmt.Print(msg)
+			fatalf(msg)
+		}
+	}()
 	activation := ManipulationSystemActivation{}
 	correction := b.HealthAnalyzerNet.Correction(i[0])
 	for _, inp := range o {
@@ -54,15 +67,29 @@ func (b *Brain) energyCost(activations ManipulationSystemActivation) int {
 }
 
 func (b *Brain) Mutate(n int) IBrain {
+	debugf(b.strf("Mutate(%d) START", n))
+	defer debugf(b.strf("Mutate END"))
+
 	newBrain := b
 	for i := 0; i < n; i++ {
-		newBrain = newBrain.randomMutation().apply(newBrain)
+		prevBrain := newBrain
+		mutation := newBrain.randomMutation()
+		debugf(prevBrain.strf("%#v", mutation))
+		newBrain = mutation.apply(newBrain)
+		debugf(prevBrain.strf(" -> [%s] %s", newBrain.uuid, newBrain))
 	}
 	return newBrain
 }
 
+func (b *Brain) strf(pattern string, args ...interface{}) string {
+	args = append([]interface{}{b.origUuid, b.uuid}, args...)
+	return fmt.Sprintf("%s [%s] "+pattern, args...)
+}
+
 func (b *Brain) copy() *Brain {
 	return &Brain{
+		uuid:                uuid.New(),
+		origUuid:            b.origUuid,
 		OuterReceptor:       b.OuterReceptor,
 		HealthAnalyzerNet:   b.HealthAnalyzerNet,
 		OuterAnalyzersCount: b.OuterAnalyzersCount,
@@ -71,11 +98,27 @@ func (b *Brain) copy() *Brain {
 	}
 }
 
+func (b *Brain) String() string {
+	pattern := "{uuid: %s, origUuid: %s, OuterReceptor: %s, HealthAnalyzerNet: %s, OuterAnalyzersCount: %d, OuterAnalyzerNet: %s, ManipulationSystem: %s}"
+	return fmt.Sprintf(
+		pattern,
+		b.uuid.String(),
+		b.origUuid.String(),
+		b.OuterReceptor.String(),
+		b.HealthAnalyzerNet.String(),
+		b.OuterAnalyzersCount,
+		b.OuterAnalyzerNet.String(),
+		b.ManipulationSystem.String(),
+	)
+}
+
 func RandomBrain() *Brain {
 	b := &Brain{
+		uuid:                uuid.New(),
 		OuterAnalyzersCount: rand.Intn(10) + 1,
 		ManipulationSystem:  randomManipulationSystem(),
 	}
+	b.origUuid = b.uuid
 	b.OuterReceptor = randomOuterReceptor(b.OuterAnalyzersCount)
 	b.OuterAnalyzerNet = randomOuterAnalyzerNet(b.OuterAnalyzersCount, len(b.ManipulationSystem))
 	b.HealthAnalyzerNet = randomHealthAnalyzerNet(len(b.OuterAnalyzerNet))
@@ -83,7 +126,7 @@ func RandomBrain() *Brain {
 }
 
 func (b *Brain) randomMutation() iMutation {
-	switch rand.Intn(9) {
+	switch rand.Intn(11) {
 	case 0:
 		return mIncreaseVisionRange{}
 	case 1:
@@ -102,7 +145,11 @@ func (b *Brain) randomMutation() iMutation {
 		return randomChangeManipulatorValue(b)
 	case 8:
 		return reductiveMutation{}
+	case 9:
+		return mAddOuterAnalyzer{}
+	case 10:
+		return randomAddManipulatorMutation()
 	default:
-		return randomChangeOuterReceptor(b)
+		return randomAddManipulatorMutation()
 	}
 }

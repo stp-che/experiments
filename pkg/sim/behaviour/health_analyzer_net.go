@@ -1,6 +1,9 @@
 package behaviour
 
-import "math/rand"
+import (
+	"fmt"
+	"math/rand"
+)
 
 type HealthAnalyzerLink struct {
 	MinHealth         uint8
@@ -16,6 +19,19 @@ func (l HealthAnalyzerLink) copy() HealthAnalyzerLink {
 const healthAnalyzerLinkCorrectionBase = 16
 
 type HealthAnalyzerNet []*HealthAnalyzerLink
+
+func (n HealthAnalyzerNet) String() string {
+	s := "["
+	for i, link := range n {
+		if i > 0 {
+			s += ", "
+		}
+		s += fmt.Sprintf("&{%d, %d, %d, %d}", link.MinHealth, link.MaxHealth, link.OuterAnalyzerLink, link.Correction)
+	}
+	s += "]"
+
+	return s
+}
 
 func (n HealthAnalyzerNet) Correction(healthIndicator int) OuterAnalyzerNetCorrection {
 	res := OuterAnalyzerNetCorrection{}
@@ -35,6 +51,17 @@ func (n HealthAnalyzerNet) Correction(healthIndicator int) OuterAnalyzerNetCorre
 func (n HealthAnalyzerNet) copy() HealthAnalyzerNet {
 	nn := make(HealthAnalyzerNet, len(n))
 	copy(nn, n)
+	return nn
+}
+
+func (n HealthAnalyzerNet) appendSafely(link *HealthAnalyzerLink) HealthAnalyzerNet {
+	size := len(n)
+	nn := make(HealthAnalyzerNet, size+1)
+	for i := 0; i < size; i++ {
+		nn[i] = n[i]
+	}
+	nn[size] = link
+
 	return nn
 }
 

@@ -16,7 +16,7 @@ func (m mChangeOuterAnalyzerLinkPower) apply(brain *Brain) *Brain {
 	i := m.linkIndex(brain)
 	if i == -1 {
 		if m.analyzer < uint8(brain.OuterAnalyzersCount) && m.manipulator < uint8(len(brain.ManipulationSystem)) {
-			newBrain.OuterAnalyzerNet = append(newBrain.OuterAnalyzerNet, &OuterAnalyzerLink{
+			newBrain.OuterAnalyzerNet = newBrain.OuterAnalyzerNet.appendSafely(&OuterAnalyzerLink{
 				Analyzer:    m.analyzer,
 				Signal:      m.signal,
 				Manipulator: m.manipulator,

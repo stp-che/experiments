@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"experiments/pkg/sim"
+	"experiments/pkg/sim/behaviour"
 	"experiments/pkg/ui"
 
 	"github.com/faiface/pixel/pixelgl"
+	"go.uber.org/zap"
 )
 
 var simConfig = sim.Config{
@@ -21,7 +23,22 @@ var simConfig = sim.Config{
 	FoodAmount:        100,
 }
 
+func setupLogger() (*zap.Logger, *zap.SugaredLogger) {
+	cfg := zap.NewDevelopmentConfig()
+	cfg.DisableCaller = true
+	cfg.OutputPaths = []string{"log/sim.log"}
+	logger, _ := cfg.Build()
+	sugar := logger.Sugar()
+	behaviour.SetLogger(sugar)
+	return logger, sugar
+}
+
 func run() {
+	// Uncomment this to enable logging
+	// logger, sugar := setupLogger()
+	// defer logger.Sync()
+	// sugar.Infof("Start")
+
 	rand.Seed(time.Now().UnixNano())
 	sim, err := sim.NewSimulation(simConfig)
 	if err != nil {

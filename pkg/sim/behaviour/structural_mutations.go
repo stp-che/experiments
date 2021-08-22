@@ -12,31 +12,40 @@ const (
 type reductiveMutation struct{}
 
 func (m reductiveMutation) apply(b *Brain) *Brain {
+	debugf(b.strf("reductiveMutation START"))
+	defer debugf(b.strf("reductiveMutation END"))
+
 	newBrain := b.copy()
 
 	idx := findOrphanManipulator(newBrain)
+	debugf(b.strf("reductiveMutation findOrphanManipulator: %d", idx))
 	if idx >= 0 {
 		removeManipulator(newBrain, idx)
 		return newBrain
 	}
 
 	idx = findUselessOuterAnalyzer(newBrain)
+	debugf(b.strf("reductiveMutation findUselessOuterAnalyzer: %d", idx))
 	if idx >= 0 {
 		removeOuterAnalyzer(newBrain, uint8(idx))
 		return newBrain
 	}
 
 	idx = findUselessOuterLink(newBrain)
+	debugf(b.strf("reductiveMutation findUselessOuterLink: %d", idx))
 	if idx >= 0 {
 		removeOuterAnalyzerLink(newBrain, idx)
 		return newBrain
 	}
 
 	idx = findUselessHealthLink(newBrain)
+	debugf(b.strf("reductiveMutation findUselessHealthLink: %d", idx))
 	if idx >= 0 {
 		removeHealthAnalyzerLink(newBrain, idx)
 		return newBrain
 	}
+
+	debugf(b.strf("reductiveMutation nothing to do"))
 
 	return newBrain
 }
@@ -150,7 +159,7 @@ func (m mAddManipulator) apply(b *Brain) *Brain {
 	newBrain := b.copy()
 	if len(b.ManipulationSystem) < maxManipulatorsCount {
 		newManipulator := Manipulator{m.action, m.dirValues}
-		newBrain.ManipulationSystem = append(b.ManipulationSystem, &newManipulator)
+		newBrain.ManipulationSystem = b.ManipulationSystem.appendSafely(&newManipulator)
 	}
 	return newBrain
 }
